@@ -19,7 +19,7 @@ DEFAULT = {
 
 def load(project_dir, extra=None):
     """DEFAULT + project <dir>/lexicon.json + `extra` (e.g. a brand's lexicon).
-    All keys are normalized to the lookup form, so authors can write "davesaunders.net"
+    All keys are normalized to the lookup form, so authors can write "acme.example"
     and it matches the token regardless of punctuation/case."""
     lex = dict(DEFAULT)
     p = (project_dir / "lexicon.json") if hasattr(project_dir, "joinpath") else None

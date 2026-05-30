@@ -2,7 +2,7 @@
 with **local-first, then global** precedence:
   1. ./brand/<SLUG>/         (the content project you run /explainer from)
   2. $EXPLAINER_BRAND_DIR/<SLUG>/
-  3. ~/.claude/explainer-brands/<SLUG>/   (shared library; define FFW, BRG once)
+  3. ~/.claude/explainer-brands/<SLUG>/   (shared library; define your brands once)
 
 A brand folder has a brand.json + asset files:
   { "name": "...", "logo": "logo.png", "product": "book.png",

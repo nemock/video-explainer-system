@@ -157,7 +157,7 @@ def main(argv=None):
     s.add_argument("--min-length", type=int, default=None, dest="min_length",
                    help="minimum playback seconds (sets manifest length_warning if unmet)")
     s.add_argument("--brand", default=None,
-                   help="brand slug (e.g. FFW); adds watermark + auto CTA end slide from the brand library")
+                   help="brand slug (e.g. ACME); adds watermark + auto CTA end slide from the brand library")
     s.set_defaults(func=cmd_scaffold)
 
     m = sub.add_parser("media", help="run the pure-Python media pipeline on a project dir")

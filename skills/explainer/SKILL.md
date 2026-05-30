@@ -24,10 +24,11 @@ which preserves the determinism contract (PRD §8.6). The media pipeline makes *
 calls**; once the JSON exists, it renders unattended.
 
 ## Environment
-- Package: `/Volumes/Casima/claudeCode/explainer-system` (run `explainer` from there).
-- Interpreter: `/Users/davesaunders/myenv/bin/python3` (has Kokoro/torch/Playwright/ffmpeg).
-- Console command (editable-installed into myenv): **`explainer`**. If unavailable, use
-  `PYTHONPATH=/Volumes/Casima/claudeCode/explainer-system/src /Users/davesaunders/myenv/bin/python3 -m explainer.cli`.
+- Package: the cloned `explainer-system` repo (run `explainer` from there).
+- Interpreter: a Python venv with Kokoro / torch / Playwright / ffmpeg installed.
+- Console command (editable-installed into that venv): **`explainer`** (on PATH once the
+  venv is active). If unavailable, use
+  `PYTHONPATH=<repo>/src python -m explainer.cli`.
 - Shell discipline (CLAUDE.md): the `media` command is **synchronous — run it in the
   foreground and let it finish** (~50s for a ~20s video). No polling, no backgrounding.
 
@@ -40,7 +41,7 @@ One cheap confirmation, then proceed.
 
 ### 2. Scaffold
 ```
-explainer scaffold "<slug>" --title "<title>" [--aspect 9:16] [--theme midnight] [--brand FFW] [--voice-source operator]
+explainer scaffold "<slug>" --title "<title>" [--aspect 9:16] [--theme midnight] [--brand ACME] [--voice-source operator]
 ```
 Themes (a *family* of looks — vary them across a channel, PRD §8.5): `midnight` (default,
 cool dark), `paper` (light), `sunset` (warm dark), `forest` (green dark), `mono` (yellow on
@@ -204,16 +205,16 @@ Pass a brand slug to stamp the video with a brand and a CTA. Resolution is **loc
 then global**: `./brand/<SLUG>/` (the content project you run from) → `$EXPLAINER_BRAND_DIR/`
 → `~/.claude/explainer-brands/<SLUG>/`. A brand folder holds `brand.json` + assets:
 ```json
-{ "name": "Founders Who Finish",
+{ "name": "ACME Co",
   "logo": "logo.png",            // transparent PNG — small corner watermark on EVERY slide + larger on the CTA
   "product": "product.png",      // optional — e.g. a book cover, shown on the CTA slide
   "watermark_corner": "bl",      // bl | br
   "accent": "#5b8cff",           // optional — tints the theme accent to brand color
-  "lexicon": { "davesaunders.net": "Dave Saunders dot net" },  // optional — brand-specific pronunciations
+  "lexicon": { "acme.example": "ACME dot example" },  // optional — brand-specific pronunciations
   "talk_time": { "tag": "<brand-tag>", "library": "/abs/path/to/library" },  // optional — operator's private take-library (step 4a)
-  "cta": { "headline": "Read the book.", "subkicker": "Out now",
-           "url": "founderswhofinish.com",
-           "spoken": "Grab my book, Founders Who Finish — link in bio." } }
+  "cta": { "headline": "Get the thing.", "subkicker": "Out now",
+           "url": "acme.example",
+           "spoken": "Check out ACME — link in bio." } }
 ```
 When `--brand` is set: assets are copied into the output dir (self-contained), the **logo
 watermarks every slide** in the safe-zone corner, and a **CTA end slide is auto-appended**

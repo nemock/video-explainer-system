@@ -49,7 +49,7 @@ See **[PRD.md](PRD.md)** for the full architecture, phase-by-phase build log, ri
 ## Quick start (sketch)
 
 ```bash
-explainer scaffold "what is a vector database" --brand FFW
+explainer scaffold "what is a vector database" --brand ACME
 # Claude authors script.json + deck.json (research, hook, slides)…
 explainer media outputs/<date>_what-is-a-vector-database
 #  → deck/index.html, video/explainer_9x16.mp4, captions/, manifest.json
