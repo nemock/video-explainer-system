@@ -94,8 +94,12 @@
 
   window.renderAt = function (t) {
     var tl = window.TIMELINE; if (!tl) return;
-    if (ambient) {  // continuous breathing glow — opacity is GPU-composited (cheap, no repaint)
-      ambient.style.opacity = (0.06 + 0.10 * (0.5 + 0.5 * Math.sin(t * 0.8))).toFixed(4);
+    if (ambient) {  // continuous breathing glow + drift — GPU-composited (cheap, no repaint).
+      // Opacity breathes; position drifts on two coprime-ish frequencies so the motion never
+      // stalls simultaneously on both axes (a single sine stalls at its extremes → frozen frames).
+      ambient.style.opacity = (0.08 + 0.10 * (0.5 + 0.5 * Math.sin(t * 0.8))).toFixed(4);
+      ambient.style.transform = 'translate(' + (3.2 * Math.sin(t * 0.37)).toFixed(2) + '%,'
+        + (2.6 * Math.cos(t * 0.29)).toFixed(2) + '%)';
     }
     var active = tl.slides[0];
     tl.slides.forEach(function (s) { if (t >= s.start) active = s; });
