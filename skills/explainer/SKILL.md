@@ -40,7 +40,7 @@ One cheap confirmation, then proceed.
 
 ### 2. Scaffold
 ```
-explainer scaffold "<slug>" --title "<title>" [--aspect 9:16] [--theme midnight] [--brand FFW]
+explainer scaffold "<slug>" --title "<title>" [--aspect 9:16] [--theme midnight] [--brand FFW] [--voice-source operator]
 ```
 Themes (a *family* of looks — vary them across a channel, PRD §8.5): `midnight` (default,
 cool dark), `paper` (light), `sunset` (warm dark), `forest` (green dark), `mono` (yellow on
@@ -193,6 +193,28 @@ watermarks every slide** in the safe-zone corner, and a **CTA end slide is auto-
 and synced. You don't author the CTA slide/segment — the pipeline adds them from the brand
 (author your own `{"id":"cta","type":"cta"}` slide / `slide:"cta"` segment only to override).
 The `url` is on-screen text only — the tool still never links out or posts.
+
+## Voiceover mode — the operator's real voice (`--voice-source operator`)
+For higher-production pieces, the narration can be **the operator reading the script**, instead of
+Kokoro. The pipeline is audio-first, so a real recording aligns to the slides exactly like Kokoro
+does. Be a **coach** through this loop — keep it seamless, no external apps:
+
+1. **Scaffold** with `--voice-source operator` (everything else is the same).
+2. **Author** script.json + deck.json as usual. Offer a quick **review checkpoint** — let the operator
+   tweak the script *before* recording (re-recording is the costly step).
+3. **Record (integrated).** Run **`explainer record <project_dir>`** — but launch it **in the
+   background** so the conversation keeps moving. It opens a browser **teleprompter** that records the
+   mic per segment (record / re-record / playback), saving straight into `voiceover/`. Tell the operator:
+   *"Teleprompter's open — read each segment, re-record any you flub, then click Finish."* The command
+   returns when they click **Finish**; its result lists `recorded` / `missing` segment ids.
+4. **If any segment is `missing`,** tell them which and re-launch `record` (already-recorded segments
+   stay ✓). Don't proceed until all are recorded.
+5. **Render.** Run `explainer media <project_dir>` — the operator-narrate path assembles the clips,
+   runs them through the local **audio-cleanup** skill (podcast-grade, −14 LUFS), aligns, and renders.
+6. **Report** the finished video and ask *"what do you think?"*
+
+The tool can also run **fully end-to-end** with Kokoro (`--voice-source kokoro`, default) — give it a
+topic and it returns a finished video. Voiceover mode is the **interactive, co-built** tier.
 
 ## Out of scope (current phase)
 Music *beat-sync*, operator `--interview` voice capture, **C2PA embedding** (needs c2patool +
