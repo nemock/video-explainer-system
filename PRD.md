@@ -1,7 +1,7 @@
 # Product Requirements Document — **Explainer System**
 ### A local-first Claude Code skill that turns a topic or source document into a visually dynamic HTML explainer deck and a narrated video, end-to-end.
 
-- **Status:** Draft **v0.3** — v0.2 (post-council) + operator-directed additions: atomized knowledge wiki, confirmed decisions (see §16 Changelog)
+- **Status:** **v1.0.0 shipped**; **v1.1 expansion** spec'd (§18: operator voiceover + integrated recorder + talk-time read + coach UX). History in §16 Changelog.
 - **Author:** Dave Saunders (with Claude Code)
 - **Date:** 2026-05-30
 - **Working directory:** `/Volumes/Casima/claudeCode/explainer-system`
@@ -380,4 +380,78 @@ Net: the original instinct — local, free, HTML-native, Remotion-free — is so
 
 ---
 
-*End of v0.3. The three prior open decisions (music, render engine, gate placement) are now confirmed. Remaining to confirm during build: the `talk-time` library storage path/format before wiring the wiki mirror (R13).*
+---
+
+## 18. Voice, voiceover & the coach UX (v1.1 expansion — operator-directed 2026-05-30)
+
+v1.0 shipped Kokoro-only, fully-headless generation. v1.1 adds the operator's **real voice** and a
+**coach-style interactive mode**, unlocking a higher-production tier without ever putting the
+operator on camera. Two independent axes plus a capture tool, composing into content tiers.
+
+### 18.1 Axis A — voice *sound* (who speaks)
+The pipeline is **audio-first**: it generates audio, force-aligns it to word timestamps, then syncs
+slides + kinetic captions to those timestamps. **It does not care whether the audio is Kokoro or a
+human recording** — so a real voiceover is a near-free swap.
+
+- **`--voice kokoro`** (default) — local Kokoro-82M TTS. Fully unattended.
+- **`--voice operator`** — the operator reads the generated script; their recording becomes the
+  narration. Same align → render → mux path. No webcam; better delivery than talking to a camera.
+
+### 18.2 The integrated recorder (no external app — the ADHD-proof part)
+The hard requirement: **the tool manages the whole recording, in-workflow.** No launching Audition,
+no hunting for files, no holding the workflow in your head. Approach (fits the existing HTML/Chrome
+stack): a **browser-based teleprompter + recorder** launched by `explainer record <project_dir>`:
+- A local page shows the script **segment by segment** (teleprompter), records the mic via the
+  **MediaRecorder API**, and POSTs each segment's audio to a tiny local save-server straight into the
+  project's `audio/` folder. No download dialogs, no external tools.
+- **Per-segment record + re-record** (directly solves "I misspoke, redo that chunk"): re-recording a
+  segment replaces just that clip; clean per-segment boundaries also make alignment + slide timing precise.
+- Mic permission is a one-time browser grant.
+- *(Phase-2 recording polish:* punch-in/▶ review per segment, waveform, retake history.)*
+
+### 18.3 Audio cleanup (VocalEnhancer integration)
+Raw mic audio → the local **`audio-cleanup`** skill at `/Volumes/Casima/claudeCode/VocalEnhancer`
+(ffmpeg: hum/rumble removal, denoise, de-ess, presence/warmth EQ, compression, two-pass loudnorm).
+Use the **`streaming` preset (−14 LUFS)** to match the pipeline's existing loudness target. Output
+`*_cleaned.wav` becomes `narration.wav`. All local, no paid tools.
+
+### 18.4 Aligning a real voice
+Forced alignment (torchaudio MMS_FA) aligns **any** audio to a known transcript.
+- **Read-verbatim (default):** align the cleaned recording to the generated script text → exact captions.
+- **Ad-lib (phase 2):** if the operator strays, ASR the recording (whisper, local) to get the actual
+  words, then align — captions then reflect what was actually said. Flag drift to the operator.
+
+### 18.5 Axis B — voice *words* (talk-time READ)
+Independently of who speaks, the **script** can be written in the operator's real voice by reading the
+**talk-time** library (`/Volumes/Casima/claudeCode/make_money/talk_time/`: `positions/`, `quotes.md`,
+`anecdotes/`, `topics/`, `INDEX.md`), filtered by topic + **brand tag** (e.g. `brg`). Quote verbatim
+from `quotes.md`; adapt from positions/anecdotes; **never fabricate** a take not in the library (the
+library's own rule). Applies to both Kokoro and operator-voice tiers.
+
+### 18.6 Capture tool — `--interview`
+Voice-dictate a fresh take during a run (1–3 targeted questions where a personal angle would help, or
+the library is thin). Store to the **project wiki** AND write a lightweight **raw session into
+`talk_time/raw/`** (its documented format) for later `/talk-time` distillation. **Do not auto-distill**
+into the curated positions/quotes — that's `/talk-time`'s job (it has an audit model and edge rules).
+
+### 18.7 The coach UX & content tiers
+The tool is a **coach from launch**: it can run **fully end-to-end** ("here's the topic" → finished
+video → "what do you think?") *or* **co-build interactively** for higher-production formats.
+
+| Tier | Voice | Words | Mode |
+|---|---|---|---|
+| **Daily auto reel** (e.g. the IG tip) | Kokoro | optional talk-time flavor | fully headless; also **removes the paid image-gen dependency** of the current daily routine |
+| **Weekly, meatier** (Medical Monday, Founder Tip Tuesday) | **operator VO** | talk-time + framework | interactive: generate → **operator reviews/approves** → record (integrated) → cleanup → render |
+
+### 18.8 Build order (operator-directed)
+1. **This PRD update.** ✅
+2. **Operator-voiceover mode** — `--voice operator`, the integrated browser recorder, audio-cleanup
+   integration, align-real-voice, render. Build it all.
+3. **talk-time READ** — script in the operator's voice from the library.
+4. *(later)* ad-lib ASR alignment; `--interview` capture; daily/weekly routine migration.
+
+---
+
+*End of v1.1 draft. Confirmed: voiceover via an integrated browser recorder (no external app); audio
+cleanup via the local VocalEnhancer skill (streaming/−14 LUFS); talk-time READ filtered by topic+brand;
+`--interview` writes raw to `talk_time/raw/` (no auto-distill). Building in the order of §18.8.*
