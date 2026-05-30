@@ -6,11 +6,12 @@ from datetime import date
 from pathlib import Path
 
 from .project import Project, ASPECTS
-from . import deckbuild, manifest, wiki, ingest
+from . import deckbuild, manifest, wiki, ingest, themes, qa
 from .media import synth, align, render, mux
 
 STAGES = [("narrate", synth.run), ("align", align.run), ("deck", deckbuild.run),
-          ("render", render.run), ("mux", mux.run), ("manifest", manifest.run)]
+          ("render", render.run), ("mux", mux.run), ("manifest", manifest.run),
+          ("qa", qa.run)]
 STAGE_MAP = dict(STAGES)
 
 
@@ -28,7 +29,7 @@ def cmd_scaffold(args):
     out.mkdir(parents=True, exist_ok=True)
     proj = {"title": args.title or args.slug, "slug": slug, "aspect": args.aspect,
             "width": w, "height": h, "fps": args.fps, "voice": args.voice,
-            "language": "en", "theme": {}}
+            "language": "en", "theme": args.theme}
     (out / "project.json").write_text(json.dumps(proj, indent=2))
     print(json.dumps({"project_dir": str(out), "project_json": str(out / "project.json"),
                       "next": "author script.json + deck.json, then `explainer media <dir>`"}, indent=2))
@@ -96,6 +97,7 @@ def main(argv=None):
     s.add_argument("--aspect", default="9:16", choices=list(ASPECTS))
     s.add_argument("--fps", type=int, default=30)
     s.add_argument("--voice", default="af_heart")
+    s.add_argument("--theme", default="midnight", choices=list(themes.THEMES))
     s.set_defaults(func=cmd_scaffold)
 
     m = sub.add_parser("media", help="run the pure-Python media pipeline on a project dir")

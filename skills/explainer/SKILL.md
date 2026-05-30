@@ -40,8 +40,11 @@ One cheap confirmation, then proceed.
 
 ### 2. Scaffold
 ```
-explainer scaffold "<slug>" --title "<title>" [--aspect 9:16] [--fps 30] [--voice af_heart]
+explainer scaffold "<slug>" --title "<title>" [--aspect 9:16] [--fps 30] [--voice af_heart] [--theme midnight]
 ```
+Themes (a *family* of looks — vary them across a channel, PRD §8.5): `midnight` (default,
+cool dark), `paper` (light), `sunset` (warm dark), `forest` (green dark), `mono` (yellow on
+near-black). Each carries a default motion personality.
 This creates `outputs/<date>_<slug>/project.json` and prints the project dir. Use that dir
 for everything below.
 
@@ -99,6 +102,10 @@ Spell tricky tokens phonetically for Kokoro (e.g. "GPT four", not "GPT-4"); acro
 `figure` slides frame an ingested screenshot/figure (white card on the dark theme); the
 `image` path is relative to the project root (e.g. `sources/x.png`). Use them to feature
 real source material on source-driven runs.
+
+Each slide may set `"transition"` (`rise` · `fade` · `pop` · `slide`) to override the
+theme's default intro motion. **Vary it** across slides — don't repeat the same transition
+on every slide (the §8.4 anti-repetition rule); repetition reads as "templated".
 Rules: every slide has motion by construction; `accent`/`accent2` highlight words by the
 theme colors; keep headlines tight (they auto-shrink past ~60 chars). Keep `id`s identical
 across the two files. Aim for 4–6 slides for a ~20–40s Short.
@@ -119,8 +126,13 @@ it needs (this tool still does NOT post):
 ```
 explainer media outputs/<date>_<slug>
 ```
-Runs narrate → align → deck → render → mux → manifest and writes `results.json`. If a stage
-fails, it prints `failed_stage`; re-run a single stage with `explainer <stage> <dir>`.
+Runs narrate → align → deck → render → mux → manifest → **qa** and writes `results.json`. If
+a stage fails, it prints `failed_stage`; re-run a single stage with `explainer <stage> <dir>`.
+
+The **qa** stage (motion/pacing) reports warnings in `work/qa.json`: *visual dead air during
+speech* (held frames while narrating — add motion or split the shot), over-long shots, and
+uniform cut rhythm. Read the warnings; if dead air is high, tighten pacing or split slides
+and re-render. Warnings are advisory, not fatal.
 
 ### 7. Report
 Tell the user the output dir and the key artifacts:
@@ -137,6 +149,5 @@ aspect to match the target platform; one project renders one aspect (multi-aspec
 project is Phase 4).
 
 ## Out of scope (current phase)
-Template *family*/multiple themes, music + beat-sync, operator `--interview` voice capture,
-C2PA embedding, per-platform safe-zone insets, simultaneous multi-aspect — these are later
-phases (see PRD). Don't fake them.
+Music + beat-sync, operator `--interview` voice capture, C2PA embedding, per-platform
+safe-zone insets, simultaneous multi-aspect — these are later phases (see PRD). Don't fake them.

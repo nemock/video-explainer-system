@@ -61,8 +61,8 @@ class Project:
     def voice(self): return self.data.get("voice", "af_heart")
     @property
     def theme(self):
-        return {"bg": "#0b1020", "fg": "#f5f7ff", "accent": "#5b8cff",
-                "accent2": "#ff7a59", **self.data.get("theme", {})}
+        from . import themes
+        return themes.resolve(self.data.get("theme"))
 
     def write_json(self, rel_or_path, obj):
         p = rel_or_path if isinstance(rel_or_path, Path) else self.dir / rel_or_path

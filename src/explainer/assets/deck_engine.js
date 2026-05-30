@@ -12,6 +12,17 @@
 
   function easeOut(x) { x = Math.min(1, Math.max(0, x)); return 1 - Math.pow(1 - x, 3); }
 
+  // intro transition styles (theme motion personality + per-slide override, PRD §8.4)
+  function introTransform(style, p) {
+    switch (style) {
+      case 'fade':  return 'translateY(0)';
+      case 'pop':   return 'scale(' + (0.92 + 0.08 * p) + ')';
+      case 'slide': return 'translateX(' + ((1 - p) * -70) + 'px)';
+      case 'rise':
+      default:      return 'translateY(' + ((1 - p) * 40) + 'px)';
+    }
+  }
+
   // wrap any word in `accent`/`accent2` lists with a highlight span
   function headlineHTML(text, accent, accent2) {
     accent = accent || []; accent2 = accent2 || [];
@@ -52,6 +63,9 @@
 
   var slideEls = {};
   Array.prototype.forEach.call(stage.children, function (el) { slideEls[el.dataset.id] = el; });
+  var DECK_MOTION = DECK.motion || 'rise';
+  var styleById = {};
+  DECK.slides.forEach(function (s) { styleById[s.id] = s.transition || DECK_MOTION; });
 
   window.renderAt = function (t) {
     var tl = window.TIMELINE; if (!tl) return;
@@ -64,7 +78,7 @@
       var span = win.end - win.start;
       var p = easeOut((t - win.start) / Math.min(0.6, span));
       el.style.opacity = p;
-      el.style.transform = 'translateY(' + ((1 - p) * 40) + 'px)';
+      el.style.transform = introTransform(styleById[win.id] || DECK_MOTION, p);
       if (el.dataset.type === 'diagram') {
         var g = easeOut((t - win.start) / Math.min(1.0, span));
         Array.prototype.forEach.call(el.querySelectorAll('.bar'), function (bar) {

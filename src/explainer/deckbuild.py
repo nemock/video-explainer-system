@@ -16,6 +16,7 @@ def run(proj):
         if s.get("type") == "figure" and img and not img.startswith(("/", "../", "http")):
             s["image"] = "../" + img
     theme = proj.theme
+    deck["motion"] = theme.get("motion", "rise")  # theme's default per-slide intro
     w, h = proj.size
     base = (ASSETS / "deck_base.html").read_text()
     css = (ASSETS / "deck.css").read_text()
