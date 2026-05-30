@@ -142,12 +142,17 @@ Tell the user the output dir and the key artifacts:
 - `manifest.json` (`ready_for_post`, AI-disclosure, per-platform captions)
 Spot-check one rendered frame in `work/frames/` to confirm layout/legibility before declaring done.
 
-## Aspects
-Scaffold with `--aspect 9:16` (Shorts/TikTok/Reels), `16:9` (YouTube/LinkedIn), or `4:5`
-(in-feed). The deck sizing is short-side based, so all aspects render consistently. Pick the
-aspect to match the target platform; one project renders one aspect (multi-aspect from one
-project is Phase 4).
+## Aspects, platforms & length
+- `--aspect 9:16|16:9|4:5|1:1`, or render **several at once** with `--aspects "9:16,1:1"`
+  (one project → one MP4 per aspect; layout is robust across aspects).
+- `--platform <tiktok|reels|shorts|threads|linkedin|youtube|square>` sets the aspect + a
+  safe-zone bottom inset (captions clear the platform's UI chrome) and, where relevant, a
+  default min length (e.g. tiktok ⇒ 60s).
+- `--min-length <seconds>`: if the rendered narration is shorter, the manifest gets a
+  `length_warning` and `ready_for_post:false`. **Meet it by deepening the script with a
+  sourced beat (a new example / fact), never by padding** (PRD §7) — then re-render.
 
 ## Out of scope (current phase)
-Music + beat-sync, operator `--interview` voice capture, C2PA embedding, per-platform
-safe-zone insets, simultaneous multi-aspect — these are later phases (see PRD). Don't fake them.
+Music + beat-sync, operator `--interview` voice capture, C2PA embedding, automatic
+min-length deepening (you do it), layout *variants* within a template — these are later
+phases (see PRD). Don't fake them.

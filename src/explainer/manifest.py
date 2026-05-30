@@ -1,24 +1,34 @@
-"""PACKAGE — write the versioned manifest.json (PRD §9). The deterministic parts
-are filled here; Claude-authored summary / per-platform captions / sources are
-merged from an optional meta.json the skill writes."""
+"""PACKAGE — write the versioned manifest.json (PRD §9). Deterministic parts are
+filled here; Claude-authored summary / per-platform captions / sources are merged
+from an optional meta.json the skill writes. Handles multi-aspect + min-length."""
 import json
 from . import __version__
 
 
 def run(proj):
     meta = {}
-    meta_path = proj.dir / "meta.json"
-    if meta_path.exists():
-        meta = json.loads(meta_path.read_text())
-
+    if (proj.dir / "meta.json").exists():
+        meta = json.loads((proj.dir / "meta.json").read_text())
     mux = {}
-    mux_path = proj.work / "metrics_mux.json"
-    if mux_path.exists():
-        mux = json.loads(mux_path.read_text())
+    if (proj.work / "metrics_mux.json").exists():
+        mux = json.loads((proj.work / "metrics_mux.json").read_text()).get("aspects", {})
 
-    label = proj.aspect.replace(":", "x")
-    video_rel = f"video/explainer_{label}.mp4"
-    has_video = (proj.dir / video_rel).exists()
+    video, per_aspect, duration = {}, {}, None
+    for aspect in proj.aspects:
+        label = aspect.replace(":", "x")
+        rel = f"video/explainer_{label}.mp4"
+        if (proj.dir / rel).exists():
+            video[aspect] = rel
+            per_aspect[aspect] = "ok"
+            duration = mux.get(aspect, {}).get("duration_s", duration)
+        else:
+            per_aspect[aspect] = "missing"
+
+    ready = bool(video) and all(v == "ok" for v in per_aspect.values())
+    length_warning = None
+    if proj.min_length and duration and duration < proj.min_length:
+        length_warning = f"duration {duration}s is under min_length {proj.min_length}s — deepen the script"
+        ready = False
 
     manifest = {
         "schema_version": "0.1",
@@ -28,24 +38,19 @@ def run(proj):
         "slug": proj.data.get("slug", proj.dir.name),
         "language": proj.data.get("language", "en"),
         "voice": proj.voice,
-        "aspect": proj.aspect,
-        "duration_s": mux.get("duration_s"),
+        "aspects": proj.aspects,
+        "duration_s": duration,
         "deck": "deck/index.html",
-        "video": {proj.aspect: video_rel} if has_video else {},
+        "video": video,
         "captions": {"srt": "captions/captions.srt", "vtt": "captions/captions.vtt"},
-        "status": {
-            "ready_for_post": bool(has_video),
-            "per_aspect": {proj.aspect: "ok" if has_video else "missing"},
-        },
-        # this content is AI-scripted + AI-narrated (Kokoro): disclose by default.
+        "status": {"ready_for_post": ready, "per_aspect": per_aspect, "length_warning": length_warning},
         "ai_disclosure": {
-            "ai_generated_audio": True,
-            "ai_generated_visuals": True,
-            "recommended_label": "creator-disclosed",
-            "c2pa_embedded": False,  # C2PA embedding is a later phase
+            "ai_generated_audio": True, "ai_generated_visuals": True,
+            "recommended_label": "creator-disclosed", "c2pa_embedded": False,
         },
         "per_platform": meta.get("per_platform", []),
         "sources": meta.get("sources", []),
     }
     proj.write_json(proj.dir / "manifest.json", manifest)
-    return {"manifest": "manifest.json", "ready_for_post": manifest["status"]["ready_for_post"]}
+    return {"manifest": "manifest.json", "ready_for_post": ready,
+            "aspects": proj.aspects, "length_warning": length_warning}

@@ -51,10 +51,21 @@ class Project:
     @property
     def aspect(self): return self.data.get("aspect", "9:16")
     @property
+    def aspects(self):
+        """All aspects to render (multi-aspect); defaults to the primary."""
+        return self.data.get("aspects") or [self.aspect]
+    @property
     def size(self):
         if "width" in self.data and "height" in self.data:
             return self.data["width"], self.data["height"]
         return ASPECTS[self.aspect]
+    def size_for(self, aspect): return ASPECTS[aspect]
+    def frames_dir(self, label):
+        p = self.work / f"frames_{label}"; p.mkdir(parents=True, exist_ok=True); return p
+    @property
+    def safe_bottom(self): return float(self.data.get("safe_bottom", 0.14))
+    @property
+    def min_length(self): return self.data.get("min_length")
     @property
     def fps(self): return int(self.data.get("fps", 30))
     @property

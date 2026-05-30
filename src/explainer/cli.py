@@ -6,7 +6,7 @@ from datetime import date
 from pathlib import Path
 
 from .project import Project, ASPECTS
-from . import deckbuild, manifest, wiki, ingest, themes, qa
+from . import deckbuild, manifest, wiki, ingest, themes, qa, presets
 from .media import synth, align, render, mux
 
 STAGES = [("narrate", synth.run), ("align", align.run), ("deck", deckbuild.run),
@@ -23,15 +23,30 @@ def _log(proj, msg):
 
 
 def cmd_scaffold(args):
-    w, h = ASPECTS[args.aspect]
+    aspect, safe_bottom, min_length = args.aspect, 0.14, args.min_length
+    aspects = [a.strip() for a in args.aspects.split(",")] if args.aspects else None
+    if args.platform:
+        pre = presets.resolve(args.platform)
+        if pre:
+            aspect = pre["aspect"]
+            safe_bottom = pre.get("safe_bottom", 0.14)
+            if pre.get("min_length") and not min_length:
+                min_length = pre["min_length"]
+    if not aspects:
+        aspects = [aspect]
+    primary = aspects[0]
+    w, h = ASPECTS[primary]
     slug = wiki.slugify(args.slug)
     out = Path(args.outdir).resolve() / f"{date.today().isoformat()}_{slug}"
     out.mkdir(parents=True, exist_ok=True)
-    proj = {"title": args.title or args.slug, "slug": slug, "aspect": args.aspect,
-            "width": w, "height": h, "fps": args.fps, "voice": args.voice,
-            "language": "en", "theme": args.theme}
+    proj = {"title": args.title or args.slug, "slug": slug, "aspect": primary,
+            "aspects": aspects, "width": w, "height": h, "fps": args.fps,
+            "voice": args.voice, "language": "en", "theme": args.theme,
+            "safe_bottom": safe_bottom}
+    if min_length:
+        proj["min_length"] = min_length
     (out / "project.json").write_text(json.dumps(proj, indent=2))
-    print(json.dumps({"project_dir": str(out), "project_json": str(out / "project.json"),
+    print(json.dumps({"project_dir": str(out), "aspects": aspects,
                       "next": "author script.json + deck.json, then `explainer media <dir>`"}, indent=2))
 
 
@@ -98,6 +113,11 @@ def main(argv=None):
     s.add_argument("--fps", type=int, default=30)
     s.add_argument("--voice", default="af_heart")
     s.add_argument("--theme", default="midnight", choices=list(themes.THEMES))
+    s.add_argument("--platform", default=None, choices=list(presets.PLATFORMS),
+                   help="sets aspect + safe-zone (+ min length) from a platform preset")
+    s.add_argument("--aspects", default=None, help="comma list to render simultaneously, e.g. '9:16,1:1'")
+    s.add_argument("--min-length", type=int, default=None, dest="min_length",
+                   help="minimum playback seconds (sets manifest length_warning if unmet)")
     s.set_defaults(func=cmd_scaffold)
 
     m = sub.add_parser("media", help="run the pure-Python media pipeline on a project dir")

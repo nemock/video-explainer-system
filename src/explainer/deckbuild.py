@@ -17,6 +17,7 @@ def run(proj):
             s["image"] = "../" + img
     theme = proj.theme
     deck["motion"] = theme.get("motion", "rise")  # theme's default per-slide intro
+    deck["safe_bottom"] = proj.safe_bottom         # platform safe-zone inset for captions
     w, h = proj.size
     base = (ASSETS / "deck_base.html").read_text()
     css = (ASSETS / "deck.css").read_text()

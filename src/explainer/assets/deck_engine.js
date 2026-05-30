@@ -66,6 +66,10 @@
   var DECK_MOTION = DECK.motion || 'rise';
   var styleById = {};
   DECK.slides.forEach(function (s) { styleById[s.id] = s.transition || DECK_MOTION; });
+  // reserve the bottom caption zone so centered content never collides with captions
+  // (critical for short aspects like 1:1 / 16:9 which have far less vertical room than 9:16)
+  var _reserve = Math.round(window.innerHeight * ((DECK.safe_bottom || 0.14) + 0.12));
+  Array.prototype.forEach.call(stage.children, function (el) { el.style.paddingBottom = _reserve + 'px'; });
 
   window.renderAt = function (t) {
     var tl = window.TIMELINE; if (!tl) return;
@@ -81,8 +85,9 @@
       el.style.transform = introTransform(styleById[win.id] || DECK_MOTION, p);
       if (el.dataset.type === 'diagram') {
         var g = easeOut((t - win.start) / Math.min(1.0, span));
+        var barMax = window.innerHeight * 0.28;  // scale bars to viewport height
         Array.prototype.forEach.call(el.querySelectorAll('.bar'), function (bar) {
-          bar.style.height = (g * parseFloat(bar.dataset.val) * 520) + 'px';
+          bar.style.height = (g * parseFloat(bar.dataset.val) * barMax) + 'px';
         });
       }
     });
@@ -93,8 +98,10 @@
     if (captionEl.dataset.sig !== sig) {
       captionEl.dataset.sig = sig; captionEl.innerHTML = '';
       // size caption to viewport; place above the bottom safe area
-      captionEl.style.bottom = Math.round(tl.height * 0.14) + 'px';
-      var fs = Math.round(Math.min(tl.width, tl.height) * 0.052);  // short-side => consistent across aspects
+      var vw = window.innerWidth, vh = window.innerHeight;  // actual viewport (multi-aspect)
+      var safeBottom = DECK.safe_bottom || 0.14;            // platform safe-zone inset
+      captionEl.style.bottom = Math.round(vh * safeBottom) + 'px';
+      var fs = Math.round(Math.min(vw, vh) * 0.052);        // short-side => consistent across aspects
       words.forEach(function (w) {
         var sp = document.createElement('span'); sp.className = 'w'; sp.textContent = w.word;
         sp.style.fontSize = fs + 'px'; captionEl.appendChild(sp);
