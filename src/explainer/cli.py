@@ -6,7 +6,7 @@ from datetime import date
 from pathlib import Path
 
 from .project import Project, ASPECTS
-from . import deckbuild, manifest, wiki, ingest, themes, qa, presets, validate, handoff, brand, talktime
+from . import deckbuild, manifest, wiki, ingest, themes, qa, presets, validate, handoff, brand, talktime, stills
 from .media import synth, align, render, mux
 
 STAGES = [("narrate", synth.run), ("align", align.run), ("deck", deckbuild.run),
@@ -111,6 +111,11 @@ def cmd_record(args):
     print(json.dumps(recorder.run(Project.load(args.project_dir), open_browser=not args.no_open), indent=2))
 
 
+def cmd_stills(args):
+    proj = Project.load(args.project_dir)
+    print(json.dumps(stills.run(proj, aspect=args.aspect), indent=2))
+
+
 def cmd_talktime(args):
     tag, library = args.tag, args.library
     if args.brand and not (tag and library):
@@ -190,6 +195,11 @@ def main(argv=None):
     ho = sub.add_parser("handoff", help="emit per-platform blotato-ready post specs from the manifest")
     ho.add_argument("project_dir")
     ho.set_defaults(func=cmd_handoff)
+
+    stl = sub.add_parser("stills", help="export one PNG per slide from the rendered deck (for repurposing)")
+    stl.add_argument("project_dir")
+    stl.add_argument("--aspect", default=None, choices=list(ASPECTS), help="aspect to capture (default: project primary)")
+    stl.set_defaults(func=cmd_stills)
 
     tt = sub.add_parser("talktime", help="surface the operator's talk-time takes (read-only) to write the script in their voice")
     tt.add_argument("--brand", default=None, help="brand slug; pulls talk_time.tag (+library) from brand.json")
