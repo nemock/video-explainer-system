@@ -8,6 +8,9 @@ THEMES = {
     "sunset":   {"bg": "#1a1020", "fg": "#fff4ee", "accent": "#ff7a59", "accent2": "#ffd166", "motion": "pop"},
     "forest":   {"bg": "#0c1a14", "fg": "#eafff4", "accent": "#3ddc84", "accent2": "#ffd166", "motion": "rise"},
     "mono":     {"bg": "#101012", "fg": "#fafafa", "accent": "#f5d90a", "accent2": "#9aa0a6", "motion": "slide"},
+    # BRG MedTech: cream bg, navy text, teal accent (+ warm-rust accent2 for caution/contrast).
+    # Pair with a brand whose logo reads on cream (e.g. the navy-gradient BRG mark).
+    "medtech":  {"bg": "#f5f0eb", "fg": "#1b2b4b", "accent": "#0d7377", "accent2": "#c2410c", "motion": "fade"},
 }
 DEFAULT = "midnight"
 VALID_MOTION = {"rise", "fade", "pop", "slide"}
