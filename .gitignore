@@ -18,5 +18,8 @@ models/
 outputs/
 frames/
 
+# Atomized knowledge wiki — operator-specific generated content; not source code
+wiki/
+
 # OS
 .DS_Store
