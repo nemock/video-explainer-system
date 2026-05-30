@@ -119,7 +119,11 @@ def cmd_talktime(args):
         tag = tag or tt.get("tag")
         library = library or tt.get("library")
     topics = [t.strip() for t in args.topics.split(",")] if args.topics else None
-    print(talktime.run(library=library, tag=tag, topics=topics))
+    try:
+        print(talktime.run(library=library, tag=tag, topics=topics))
+    except FileNotFoundError as e:
+        print(e)
+        return 1
 
 
 def cmd_wiki(args):

@@ -8,7 +8,7 @@ A brand folder has a brand.json + asset files:
   { "name": "...", "logo": "logo.png", "product": "book.png",
     "cta": { "headline": "...", "subkicker": "...", "url": "...", "spoken": "..." },
     "accent": "#hex" (optional theme tint), "watermark_corner": "bl|br",
-    "talk_time": { "tag": "brg", "library": "/abs/path" (optional) } }
+    "talk_time": { "tag": "<brand-tag>", "library": "/abs/path/to/library" (optional) } }
 
 The optional `talk_time` block links the brand to a slice of the talk-time library
 (the operator's curated takes/quotes/anecdotes). `tag` filters the library by brand;

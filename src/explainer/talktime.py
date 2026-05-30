@@ -1,22 +1,25 @@
 """talk-time READ (PRD §18.5) — surface the operator's real takes so the script can be
 written in their own voice, instead of generic AI prose.
 
-This is a **read-only** locator over the talk-time library
-(`/Volumes/Casima/claudeCode/make_money/talk_time/`): it parses INDEX.md, filters the
-curated entries (anecdotes / positions / topics / quotes) by **brand tag** (+ optional
-topic keywords), and prints the matching files with absolute paths so the script-writing
-skill can Read the ones it wants. It never writes, never calls an LLM, and never
-fabricates — selection + authoring stay with the operator/skill.
+This is a **read-only** locator over a *talk-time library* — an operator-owned collection
+of curated takes (an `INDEX.md` plus `quotes.md`, `positions/`, `anecdotes/`, `topics/`).
+The library is **private to the operator and not bundled with this tool**; you point the
+tool at one. It parses INDEX.md, filters the entries by **brand tag** (+ optional topic
+keywords), and prints the matching files with absolute paths so the script-writing skill
+can Read the ones it wants. It never writes, never calls an LLM, and never fabricates —
+selection + authoring stay with the operator/skill.
 
-Library precedence for the path:
+Library path resolution (first that is set wins):
   1. --library <path>
-  2. the brand's talk_time.library (brand.json)
-  3. DEFAULT_LIBRARY
+  2. the brand's talk_time.library (brand.json — where an operator keeps their private path)
+  3. the EXPLAINER_TALKTIME_LIBRARY environment variable
+If none is set, the command errors with guidance (no personal path is baked into the tool).
 """
+import os
 import re
 from pathlib import Path
 
-DEFAULT_LIBRARY = Path("/Volumes/Casima/claudeCode/make_money/talk_time")
+ENV_LIBRARY = "EXPLAINER_TALKTIME_LIBRARY"
 
 # Sections of INDEX.md we write *from*. Raw sessions / legend / structure are excluded:
 # raw transcripts are inputs to /talk-time, not source material for a script.
@@ -50,9 +53,20 @@ def _parse_index(text):
                "path": m.group("path").strip(), "tags": tags, "desc": desc.strip()}
 
 
+def _resolve_library(library):
+    lib = library or os.environ.get(ENV_LIBRARY)
+    if not lib:
+        raise FileNotFoundError(
+            "No talk-time library configured. Point at one with `--library <path>`, a "
+            "brand.json `talk_time.library`, or the EXPLAINER_TALKTIME_LIBRARY env var. "
+            "The library is the operator's private take-collection — it is not bundled "
+            "with this tool.")
+    return Path(lib)
+
+
 def find(library=None, tag=None, topics=None):
     """Return matching entries (list of dicts with an added absolute `abspath`)."""
-    lib = Path(library) if library else DEFAULT_LIBRARY
+    lib = _resolve_library(library)
     index = lib / "INDEX.md"
     if not index.exists():
         raise FileNotFoundError(f"talk-time INDEX.md not found at {index}")
@@ -78,7 +92,7 @@ def find(library=None, tag=None, topics=None):
 
 def run(library=None, tag=None, topics=None):
     """CLI entry: print a candidate list grouped by section + the authoring rules."""
-    lib = Path(library) if library else DEFAULT_LIBRARY
+    lib = _resolve_library(library)
     hits = find(library=library, tag=tag, topics=topics)
     lines = [f"talk-time library: {lib}",
              f"filter: tag={tag or '(any)'}  topics={','.join(topics) if topics else '(any)'}",
