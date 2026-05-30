@@ -298,8 +298,8 @@ No golden-file equality on the MP4. Instead, layered:
 | # | Risk / question | Mitigation / note |
 |---|---|---|
 | R1 | **Render time** dominates on the 4P+4E M3 (no discrete GPU); ~30–150 ms/frame at 1080p. | Fix capture fps (24/30 default; 60 only for kinetic Shorts); render-time budget is a **Phase-0 gate**; parallel frame ranges inside one synchronous helper; `--draft` 480p. |
-| R2 | **Visual quality** from generated HTML. | Template *family* + hook spec + **motion/pacing QA** (§8); freestyle HTML is the exception. |
-| R3 | **Kokoro prosody** on jargon/acronyms. **Not** SSML-controllable. | Normalization + **misaki phoneme-override lexicon** as a maintained asset; validate in Phase 0. |
+| R2 | **Visual quality** from generated HTML. | Template *family* + hook spec + **motion/pacing QA** (§8); freestyle HTML is the exception. A default **ambient drift glow** keeps motion alive (QA dead air 14s→~2s) but ~2× render cost — toggle `"ambient": false` for speed. |
+| R3 | **Kokoro prosody** on jargon/acronyms. **Not** SSML-controllable. | ✅ **DONE** — `lexicon.py` maps acronyms→spoken letters ("MCP"→"M C P"); author writes natural text, **captions show the acronym** (align speaks expanded tokens, collapses to display tokens); per-project `lexicon.json` overrides. |
 | R4 | **Aligner on Apple Silicon.** WhisperX/ctranslate2 has no Metal backend. | **Default to torchaudio `forced_align` / openai-/mlx-whisper word timestamps**; aeneas as line-level fallback. WhisperX dropped as default. |
 | R5 | **Music licensing.** | Vetted royalty-free local library; **default ON (low bed) for 9:16**, OFF for 16:9/deck; provenance in manifest; optional **beat-sync** of reveals/cuts using the timestamp infra. |
 | R6 | **Render engine:** HyperFrames (niche, bus-factor) vs **owned Playwright capture**. | Decide on measured fps **and maintenance risk**; lean to the owned path; isolate stage 10 behind a narrow interface so it's swappable. |

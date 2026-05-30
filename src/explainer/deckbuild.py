@@ -18,6 +18,7 @@ def run(proj):
     theme = proj.theme
     deck["motion"] = theme.get("motion", "rise")  # theme's default per-slide intro
     deck["safe_bottom"] = proj.safe_bottom         # platform safe-zone inset for captions
+    deck["ambient"] = bool(proj.data.get("ambient", True))  # drifting glow (set false for ~2x faster render)
     w, h = proj.size
     base = (ASSETS / "deck_base.html").read_text()
     css = (ASSETS / "deck.css").read_text()

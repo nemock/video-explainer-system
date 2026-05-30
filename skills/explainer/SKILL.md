@@ -83,8 +83,10 @@ title-card throat-clearing.
   { "id": 1, "slide": "s2", "text": "<...>" }
 ] }
 ```
-Spell tricky tokens phonetically for Kokoro (e.g. "GPT four", not "GPT-4"); acronyms like
-"RAG" are read as words.
+Write acronyms **naturally** ("MCP", "AI", "GPT-4") — the pronunciation lexicon speaks them
+as letters/words while captions still show the acronym. Add a `<project>/lexicon.json`
+(`{"token": "spoken form"}`) for any term the default lexicon misses. Spell out numbers you
+want read a certain way (e.g. "ninety seven million").
 
 `deck.json` — one slide per id, fixed-theme slide **types**:
 ```json
@@ -133,6 +135,10 @@ The **qa** stage (motion/pacing) reports warnings in `work/qa.json`: *visual dea
 speech* (held frames while narrating — add motion or split the shot), over-long shots, and
 uniform cut rhythm. Read the warnings; if dead air is high, tighten pacing or split slides
 and re-render. Warnings are advisory, not fatal.
+
+Decks include a subtle drifting **ambient glow** by default (keeps motion alive between word
+highlights → near-zero dead air). It roughly **doubles render time** (compositing the glow
+layer); set `"ambient": false` in `project.json` for ~2× faster renders when speed matters.
 
 ### 7. Report
 Tell the user the output dir and the key artifacts:

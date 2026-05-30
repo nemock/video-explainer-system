@@ -8,7 +8,9 @@ GAP = 0.18      # silence between segments (seconds)
 
 
 def run(proj):
+    from .. import lexicon
     script = json.loads(proj.script_json.read_text())
+    lex = lexicon.load(proj.dir)
     from kokoro import KPipeline
     t0 = time.time()
     pipe = KPipeline(lang_code="a")
@@ -18,8 +20,9 @@ def run(proj):
     full, segs, cursor, synth_s = [], [], 0.0, 0.0
     for seg in script["segments"]:
         ts = time.time()
+        spoken = lexicon.spoken_text(seg["text"], lex)  # expand acronyms for TTS only
         chunks = []
-        for _, _, audio in pipe(seg["text"], voice=proj.voice, speed=1):
+        for _, _, audio in pipe(spoken, voice=proj.voice, speed=1):
             a = audio.detach().cpu().numpy() if hasattr(audio, "detach") else np.asarray(audio)
             chunks.append(a.astype(np.float32))
         synth_s += time.time() - ts

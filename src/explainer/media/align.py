@@ -15,15 +15,23 @@ def _ts(t, sep=","):
 
 def run(proj):
     import torch, torchaudio
+    from .. import lexicon
     segs = json.loads((proj.work / "segments.json").read_text())["segments"]
     duration = json.loads((proj.work / "segments.json").read_text())["duration"]
+    lex = lexicon.load(proj.dir)
 
-    pairs = []  # (display, slide)
+    # align the SPOKEN tokens (acronyms expanded to letters), but remember which
+    # original DISPLAY token each group of spoken tokens belongs to, so captions
+    # show "MCP" while the audio said "M C P".
+    descriptors = []  # (display_token, slide, n_spoken_tokens)
+    transcript = []
     for seg in segs:
-        for disp in seg["text"].split():
-            if _norm(disp):
-                pairs.append((disp, seg["slide"]))
-    transcript = [_norm(p[0]) for p in pairs]
+        for disp, stoks in lexicon.expand(seg["text"], lex):
+            norm_stoks = [s for s in (_norm(x) for x in stoks) if s]
+            if not norm_stoks:
+                continue
+            descriptors.append((disp, seg["slide"], len(norm_stoks)))
+            transcript.extend(norm_stoks)
 
     device = "cpu"  # reliable + fast for short clips; MPS is a later optimization
     bundle = torchaudio.pipelines.MMS_FA
@@ -48,10 +56,13 @@ def run(proj):
     def t_of(f): return float(f) * ratio / sr
 
     words = []
-    for (disp, slide), spans in zip(pairs, token_spans):
+    idx = 0
+    for disp, slide, n in descriptors:
+        group = token_spans[idx:idx + n]
+        idx += n
         words.append({"word": disp, "slide": slide,
-                      "start": round(t_of(spans[0].start), 3),
-                      "end": round(t_of(spans[-1].end), 3)})
+                      "start": round(t_of(group[0][0].start), 3),
+                      "end": round(t_of(group[-1][-1].end), 3)})
     proj.write_json(proj.work / "alignment.json", {"sample_rate": sr, "words": words})
 
     # contiguous slide windows (a slide is always on screen)

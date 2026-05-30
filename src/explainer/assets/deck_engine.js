@@ -9,6 +9,8 @@
   var DECK = window.DECK || { slides: [] };
   var stage = document.getElementById('stage');
   var captionEl = document.getElementById('caption');
+  var ambient = document.getElementById('ambient');
+  if (ambient && DECK.ambient === false) { ambient.style.display = 'none'; ambient = null; }
 
   function easeOut(x) { x = Math.min(1, Math.max(0, x)); return 1 - Math.pow(1 - x, 3); }
 
@@ -73,6 +75,9 @@
 
   window.renderAt = function (t) {
     var tl = window.TIMELINE; if (!tl) return;
+    if (ambient) {  // continuous breathing glow — opacity is GPU-composited (cheap, no repaint)
+      ambient.style.opacity = (0.06 + 0.10 * (0.5 + 0.5 * Math.sin(t * 0.8))).toFixed(4);
+    }
     var active = tl.slides[0];
     tl.slides.forEach(function (s) { if (t >= s.start) active = s; });
 
