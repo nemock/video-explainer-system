@@ -10,7 +10,7 @@ GAP = 0.18      # silence between segments (seconds)
 def run(proj):
     from .. import lexicon
     script = json.loads(proj.script_json.read_text())
-    lex = lexicon.load(proj.dir)
+    lex = lexicon.load(proj.dir, (proj.brand or {}).get("lexicon"))
     from kokoro import KPipeline
     t0 = time.time()
     pipe = KPipeline(lang_code="a")

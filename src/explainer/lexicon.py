@@ -15,15 +15,20 @@ DEFAULT = {
 }
 
 
-def load(project_dir):
+def load(project_dir, extra=None):
+    """DEFAULT + project <dir>/lexicon.json + `extra` (e.g. a brand's lexicon).
+    All keys are normalized to the lookup form, so authors can write "davesaunders.net"
+    and it matches the token regardless of punctuation/case."""
     lex = dict(DEFAULT)
     p = (project_dir / "lexicon.json") if hasattr(project_dir, "joinpath") else None
     try:
         if p and p.exists():
-            lex.update({k.lower(): v for k, v in json.loads(p.read_text()).items()})
+            lex.update(json.loads(p.read_text()))
     except Exception:
         pass
-    return lex
+    if extra:
+        lex.update(extra)
+    return {_key(k): v for k, v in lex.items()}
 
 
 def _key(tok):

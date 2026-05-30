@@ -182,6 +182,7 @@ then global**: `./brand/<SLUG>/` (the content project you run from) → `$EXPLAI
   "product": "product.png",      // optional — e.g. a book cover, shown on the CTA slide
   "watermark_corner": "bl",      // bl | br
   "accent": "#5b8cff",           // optional — tints the theme accent to brand color
+  "lexicon": { "davesaunders.net": "Dave Saunders dot net" },  // optional — brand-specific pronunciations
   "cta": { "headline": "Read the book.", "subkicker": "Out now",
            "url": "founderswhofinish.com",
            "spoken": "Grab my book, Founders Who Finish — link in bio." } }

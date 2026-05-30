@@ -38,6 +38,8 @@ def copy_into(project_dir, brand_dir, data, slug):
            "watermark_corner": data.get("watermark_corner", "bl")}
     if data.get("accent"):
         cfg["accent"] = data["accent"]
+    if data.get("lexicon"):
+        cfg["lexicon"] = data["lexicon"]  # brand-specific pronunciations (e.g. domains)
     for key in ("logo", "product"):
         fn = data.get(key)
         if fn and (brand_dir / fn).exists():

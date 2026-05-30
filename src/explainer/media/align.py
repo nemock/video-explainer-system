@@ -18,7 +18,7 @@ def run(proj):
     from .. import lexicon
     segs = json.loads((proj.work / "segments.json").read_text())["segments"]
     duration = json.loads((proj.work / "segments.json").read_text())["duration"]
-    lex = lexicon.load(proj.dir)
+    lex = lexicon.load(proj.dir, (proj.brand or {}).get("lexicon"))
 
     # align the SPOKEN tokens (acronyms expanded to letters), but remember which
     # original DISPLAY token each group of spoken tokens belongs to, so captions
