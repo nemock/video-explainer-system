@@ -6,7 +6,7 @@ from datetime import date
 from pathlib import Path
 
 from .project import Project, ASPECTS
-from . import deckbuild, manifest, wiki, ingest, themes, qa, presets, validate, handoff, brand
+from . import deckbuild, manifest, wiki, ingest, themes, qa, presets, validate, handoff, brand, talktime
 from .media import synth, align, render, mux
 
 STAGES = [("narrate", synth.run), ("align", align.run), ("deck", deckbuild.run),
@@ -111,6 +111,17 @@ def cmd_record(args):
     print(json.dumps(recorder.run(Project.load(args.project_dir), open_browser=not args.no_open), indent=2))
 
 
+def cmd_talktime(args):
+    tag, library = args.tag, args.library
+    if args.brand and not (tag and library):
+        _, bdata = brand.resolve(args.brand)
+        tt = (bdata or {}).get("talk_time", {}) if bdata else {}
+        tag = tag or tt.get("tag")
+        library = library or tt.get("library")
+    topics = [t.strip() for t in args.topics.split(",")] if args.topics else None
+    print(talktime.run(library=library, tag=tag, topics=topics))
+
+
 def cmd_wiki(args):
     if args.kind == "source":
         path = wiki.add_node(args.root, "source", args.name, args.body or args.name,
@@ -175,6 +186,13 @@ def main(argv=None):
     ho = sub.add_parser("handoff", help="emit per-platform blotato-ready post specs from the manifest")
     ho.add_argument("project_dir")
     ho.set_defaults(func=cmd_handoff)
+
+    tt = sub.add_parser("talktime", help="surface the operator's talk-time takes (read-only) to write the script in their voice")
+    tt.add_argument("--brand", default=None, help="brand slug; pulls talk_time.tag (+library) from brand.json")
+    tt.add_argument("--tag", default=None, help="brand tag to filter by (e.g. brg, fwf); overrides --brand")
+    tt.add_argument("--topics", default=None, help="comma list of topic keywords to narrow candidates")
+    tt.add_argument("--library", default=None, help="override the talk-time library path")
+    tt.set_defaults(func=cmd_talktime)
 
     wk = sub.add_parser("wiki", help="add a wiki node")
     wk.add_argument("kind", choices=["source", "fact"])

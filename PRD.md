@@ -447,7 +447,10 @@ video → "what do you think?") *or* **co-build interactively** for higher-produ
 1. **This PRD update.** ✅
 2. **Operator-voiceover mode** — `--voice operator`, the integrated browser recorder, audio-cleanup
    integration, align-real-voice, render. Build it all.
-3. **talk-time READ** — script in the operator's voice from the library.
+3. **talk-time READ** — script in the operator's voice from the library. ✅
+   (`explainer talktime --brand <SLUG> [--topics …]` locates+filters the library by brand
+   tag; the skill reads the candidates and writes from them — quote verbatim, adapt, never
+   fabricate. Brand links via an optional `talk_time: {tag}` block in `brand.json`.)
 4. *(later)* ad-lib ASR alignment; `--interview` capture; daily/weekly routine migration.
 
 ---

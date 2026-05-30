@@ -112,6 +112,30 @@ Rules: every slide has motion by construction; `accent`/`accent2` highlight word
 theme colors; keep headlines tight (they auto-shrink past ~60 chars). Keep `id`s identical
 across the two files. Aim for 4–6 slides for a ~20–40s Short.
 
+#### 4a. talk-time READ — write the script in the operator's real voice
+When the brand carries a `talk_time` tag (BRG→`brg`, FFW→`fwf`), don't write generic AI
+prose — ground the script in the operator's **own** documented takes, stories, and quotes.
+This is independent of *who speaks* (Kokoro or operator VO): it shapes the **words**.
+
+Surface the relevant material (read-only — never writes, never fabricates):
+```
+explainer talktime --brand <SLUG> [--topics "ai,vc,fda"]
+```
+It parses the talk-time library's `INDEX.md`, filters entries by the brand tag (+ optional
+topic keywords), and prints candidate **quotes / positions / anecdotes / topics** with
+absolute paths. Then:
+1. **Read** the candidate files you'll draw on (Read tool, the printed abspaths).
+2. **Quote VERBATIM** from `quotes.md` — use the exact one-liners as spoken lines.
+3. **ADAPT freely** from `positions/` and `anecdotes/` — paraphrase the reasoning/story into
+   tight script prose.
+4. **NEVER fabricate** a take, stat, or story not in the library. If the library is thin on
+   the topic, say so and write only what the source material supports (or narrow the angle).
+5. Watch the per-entry brand tags + any `⚠` notes in INDEX.md (e.g. "overused — rotate",
+   NDA cautions) — honor them.
+
+Use `--topics` to narrow to the deck's subject; omit it to see everything tagged for the
+brand. This applies to both the daily (Kokoro) and weekly (operator VO) tiers.
+
 ### 5. (optional) meta.json for the manifest
 Author `meta.json` with a summary + per-platform captions so the downstream poster has what
 it needs (this tool still does NOT post):
@@ -183,6 +207,7 @@ then global**: `./brand/<SLUG>/` (the content project you run from) → `$EXPLAI
   "watermark_corner": "bl",      // bl | br
   "accent": "#5b8cff",           // optional — tints the theme accent to brand color
   "lexicon": { "davesaunders.net": "Dave Saunders dot net" },  // optional — brand-specific pronunciations
+  "talk_time": { "tag": "brg" },  // optional — links the brand to its talk-time slice (see step 4a)
   "cta": { "headline": "Read the book.", "subkicker": "Out now",
            "url": "founderswhofinish.com",
            "spoken": "Grab my book, Founders Who Finish — link in bio." } }
