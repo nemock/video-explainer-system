@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Phase 0 deck</title>
+<style>
+  /* Deterministic deck: NO css animations/transitions on captured elements.
+     All motion is computed in JS by renderAt(t). See PRD §8.6. */
+  :root { --bg:#0b1020; --fg:#f5f7ff; --accent:#5b8cff; --accent2:#ff7a59; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:100%; height:100%; background:var(--bg); color:var(--fg);
+    font-family:-apple-system, "Helvetica Neue", Arial, sans-serif; overflow:hidden; }
+  #stage { position:relative; width:1080px; height:1920px; overflow:hidden; }
+  .slide { position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding:120px 90px; text-align:center;
+    will-change:opacity, transform; }
+  .kicker { font-size:34px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--accent); font-weight:700; margin-bottom:36px; }
+  .headline { font-size:104px; line-height:1.05; font-weight:800; }
+  .accent { color:var(--accent); }
+  .accent2 { color:var(--accent2); }
+  /* simple animated diagram for the 'proof' slide */
+  .bars { display:flex; gap:34px; align-items:flex-end; height:520px; margin-top:70px; }
+  .bar { width:120px; background:var(--accent); border-radius:18px 18px 0 0; }
+  .bar.bad { background:var(--accent2); }
+  .barlabel { margin-top:18px; font-size:30px; opacity:.8; }
+  /* kinetic caption band, anchored above the 9:16 bottom safe area */
+  #caption { position:absolute; left:60px; right:60px; bottom:360px;
+    display:flex; flex-wrap:wrap; gap:14px 18px; justify-content:center; }
+  #caption .w { font-size:58px; font-weight:800; color:var(--fg);
+    text-shadow:0 4px 18px rgba(0,0,0,.55); }
+  #caption .w.active { color:var(--accent); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <section class="slide" data-slide="hook">
+    <div class="kicker">Explainer</div>
+    <div class="headline">Most <span class="accent">RAG</span> systems fail for one boring reason.</div>
+  </section>
+  <section class="slide" data-slide="point">
+    <div class="headline">It's the <span class="accent2">retriever</span>,<br>not the model.</div>
+  </section>
+  <section class="slide" data-slide="proof">
+    <div class="kicker">Stale embeddings → confident hallucination</div>
+    <div class="bars">
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <div class="bar" data-bar="recall"></div><div class="barlabel">good recall</div></div>
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <div class="bar bad" data-bar="stale"></div><div class="barlabel">stale index</div></div>
+    </div>
+  </section>
+  <section class="slide" data-slide="payoff">
+    <div class="headline">Fix <span class="accent">retrieval</span> first.</div>
+    <div class="kicker" style="margin-top:40px">re-rank · chunk smarter · measure recall</div>
+  </section>
+</div>
+<div id="caption"></div>
+
+<script>
+// Injected by the renderer before capture; falls back to a demo timeline for preview.
+window.TIMELINE = window.TIMELINE || null;
+
+const slides = Array.from(document.querySelectorAll('.slide'));
+const captionEl = document.getElementById('caption');
+
+function easeOut(x){ return 1 - Math.pow(1 - Math.min(1,Math.max(0,x)), 3); }
+
+// Deterministic: given absolute time t (seconds), set the entire visual state.
+window.renderAt = function(t){
+  const tl = window.TIMELINE;
+  if(!tl){ return; }
+  // ----- slides: cross-state by active window, with a JS-computed intro -----
+  let active = tl.slides[0];
+  for(const s of tl.slides){ if(t >= s.start) active = s; }
+  slides.forEach(el => {
+    const name = el.dataset.slide;
+    const s = tl.slides.find(x => x.slide === name);
+    if(!s || t < s.start || t >= s.end){ el.style.opacity = 0; el.style.transform = 'translateY(40px)'; return; }
+    const p = easeOut((t - s.start) / Math.min(0.6, (s.end - s.start)));
+    el.style.opacity = p;
+    el.style.transform = `translateY(${(1-p)*40}px)`;
+    // animated diagram on the proof slide: bars grow over the slide's first second
+    if(name === 'proof'){
+      const g = easeOut((t - s.start) / Math.min(1.0, (s.end - s.start)));
+      const recall = el.querySelector('[data-bar=recall]');
+      const stale = el.querySelector('[data-bar=stale]');
+      if(recall) recall.style.height = (g*460) + 'px';
+      if(stale) stale.style.height = (g*150) + 'px';
+    }
+  });
+  // ----- kinetic captions: words of the active slide, active word highlighted -----
+  const words = tl.words.filter(w => w.slide === active.slide);
+  const sig = active.slide + ':' + words.length;
+  if(captionEl.dataset.sig !== sig){
+    captionEl.dataset.sig = sig;
+    captionEl.innerHTML = '';
+    words.forEach((w,i) => {
+      const span = document.createElement('span');
+      span.className = 'w'; span.textContent = w.word; span.dataset.i = i;
+      captionEl.appendChild(span);
+    });
+  }
+  const spans = captionEl.children;
+  for(let i=0;i<spans.length;i++){
+    const w = words[i];
+    const on = w && t >= w.start && t < w.end;
+    spans[i].className = on ? 'w active' : 'w';
+    spans[i].style.transform = on ? 'scale(1.12)' : 'scale(1.0)';
+  }
+};
+
+// signal to the renderer that the page is ready
+window.__deckReady = true;
+</script>
+</body>
+</html>

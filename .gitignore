@@ -21,5 +21,9 @@ frames/
 # Atomized knowledge wiki — operator-specific generated content; not source code
 wiki/
 
+# Phase 0 spike: generated artifacts (keep the scripts + README, not the outputs)
+phase0/work/
+phase0/video/
+
 # OS
 .DS_Store

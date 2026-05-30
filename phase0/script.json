@@ -1,0 +1,15 @@
+{
+  "title": "Why RAG systems really fail",
+  "aspect": "9:16",
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "voice": "af_heart",
+  "theme": { "bg": "#0b1020", "fg": "#f5f7ff", "accent": "#5b8cff", "accent2": "#ff7a59" },
+  "segments": [
+    { "id": 0, "slide": "hook",  "text": "Most RAG systems fail for one boring reason." },
+    { "id": 1, "slide": "point", "text": "It is the retriever, not the language model." },
+    { "id": 2, "slide": "proof", "text": "When your embeddings are stale, even GPT four class models hallucinate confidently." },
+    { "id": 3, "slide": "payoff","text": "Fix retrieval first. Re-rank, chunk smarter, and measure recall before you blame the model." }
+  ]
+}
