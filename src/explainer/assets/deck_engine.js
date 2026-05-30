@@ -219,7 +219,9 @@
       var w = words[i];
       var on = w && t >= w.start && t < w.end;
       spans[i].className = on ? 'w active' : 'w';
-      spans[i].style.transform = on ? 'scale(1.12)' : 'scale(1.0)';
+      // gentle emphasis: color (in CSS) + a small scale. Keep the scale modest so the
+      // enlarged active word doesn't visually crowd its neighbours (scale doesn't reflow).
+      spans[i].style.transform = on ? 'scale(1.06)' : 'scale(1.0)';
     }
   };
 

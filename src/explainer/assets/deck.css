@@ -95,7 +95,7 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--fg);
 
 /* kinetic captions: anchored above the 9:16 bottom safe area */
 #caption { position: absolute; left: 60px; right: 60px;
-  display: flex; flex-wrap: wrap; gap: 14px 18px; justify-content: center; }
+  display: flex; flex-wrap: wrap; gap: 14px 22px; justify-content: center; }
 #caption .w { font-weight: 800; color: var(--fg); text-shadow: 0 4px 18px rgba(0,0,0,.55);
   will-change: transform, color; }
 #caption .w.active { color: var(--accent); }
