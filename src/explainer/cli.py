@@ -6,7 +6,7 @@ from datetime import date
 from pathlib import Path
 
 from .project import Project, ASPECTS
-from . import deckbuild, manifest, wiki, ingest, themes, qa, presets
+from . import deckbuild, manifest, wiki, ingest, themes, qa, presets, validate, handoff
 from .media import synth, align, render, mux
 
 STAGES = [("narrate", synth.run), ("align", align.run), ("deck", deckbuild.run),
@@ -90,6 +90,14 @@ def cmd_ingest(args):
         return 1
 
 
+def cmd_validate(args):
+    print(json.dumps(validate.run(Project.load(args.project_dir)), indent=2))
+
+
+def cmd_handoff(args):
+    print(json.dumps(handoff.run(Project.load(args.project_dir)), indent=2))
+
+
 def cmd_wiki(args):
     if args.kind == "source":
         path = wiki.add_node(args.root, "source", args.name, args.body or args.name,
@@ -137,6 +145,14 @@ def main(argv=None):
     ing.add_argument("--pages", default=None, help="PDF pages to render, e.g. '1-3,5' (default first 4)")
     ing.add_argument("--full-page", action="store_true", help="full-page URL screenshot")
     ing.set_defaults(func=cmd_ingest)
+
+    va = sub.add_parser("validate", help="check the manifest is a complete handoff contract")
+    va.add_argument("project_dir")
+    va.set_defaults(func=cmd_validate)
+
+    ho = sub.add_parser("handoff", help="emit per-platform blotato-ready post specs from the manifest")
+    ho.add_argument("project_dir")
+    ho.set_defaults(func=cmd_handoff)
 
     wk = sub.add_parser("wiki", help="add a wiki node")
     wk.add_argument("kind", choices=["source", "fact"])

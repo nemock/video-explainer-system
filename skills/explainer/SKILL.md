@@ -158,7 +158,22 @@ Spot-check one rendered frame in `work/frames/` to confirm layout/legibility bef
   `length_warning` and `ready_for_post:false`. **Meet it by deepening the script with a
   sourced beat (a new example / fact), never by padding** (PRD §7) — then re-render.
 
+### 8. Validate + hand off (boundary stops here)
+- `explainer validate <dir>` — confirm the manifest is a complete, consistent handoff
+  contract (videos exist, captions present, per-platform aspects rendered, disclosure set).
+- `explainer handoff <dir>` — emit `handoff.json`: per-platform **blotato-ready** post specs
+  (absolute `media_file`, composed `text`, `title` for YouTube, `ai_label`). A poster (the
+  `blotato-crosspost` skill) consumes it: upload `media_file` → `create_post` per entry.
+  **This tool never posts.** The `ai_disclosure` block maps to the poster's AI toggle (e.g.
+  TikTok's `isAiGenerated`) — keep it set so publishes are compliant.
+
+### Optional: music bed
+Set `"music": "<path>"` (and optionally `"music_gain": 0.16`) in `project.json` to mix a
+low royalty-free bed under the narration (recommended for 9:16; off for 16:9/deck). No audio
+ships with the tool — provide your own vetted, licensed track.
+
 ## Out of scope (current phase)
-Music + beat-sync, operator `--interview` voice capture, C2PA embedding, automatic
-min-length deepening (you do it), layout *variants* within a template — these are later
-phases (see PRD). Don't fake them.
+Music *beat-sync*, operator `--interview` voice capture, **C2PA embedding** (needs c2patool +
+a signing cert — disclosure is currently carried in the manifest + poster AI toggle), automatic
+min-length deepening (you do it), layout *variants* within a template — later phases (see PRD).
+Don't fake them.
