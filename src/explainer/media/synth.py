@@ -8,7 +8,11 @@ GAP = 0.18      # silence between segments (seconds)
 
 
 def run(proj):
+    if proj.voice_source == "operator":
+        from . import voiceover
+        return voiceover.run(proj)
     from .. import lexicon
+    from .common import effective_segments
     script = json.loads(proj.script_json.read_text())
     lex = lexicon.load(proj.dir, (proj.brand or {}).get("lexicon"))
     from kokoro import KPipeline
@@ -16,13 +20,7 @@ def run(proj):
     pipe = KPipeline(lang_code="a")
     load_s = time.time() - t0
 
-    # auto-append a spoken CTA segment from the brand (if one isn't already authored)
-    segments = list(script["segments"])
-    brand = proj.brand or {}
-    spoken_cta = (brand.get("cta") or {}).get("spoken")
-    if spoken_cta and not any(s.get("slide") == "cta" for s in segments):
-        next_id = (max(s["id"] for s in segments) + 1) if segments else 0
-        segments.append({"id": next_id, "slide": "cta", "text": spoken_cta})
+    segments = effective_segments(proj, script)
 
     gap = np.zeros(int(SR * GAP), dtype=np.float32)
     full, segs, cursor, synth_s = [], [], 0.0, 0.0

@@ -41,8 +41,8 @@ def cmd_scaffold(args):
     out.mkdir(parents=True, exist_ok=True)
     proj = {"title": args.title or args.slug, "slug": slug, "aspect": primary,
             "aspects": aspects, "width": w, "height": h, "fps": args.fps,
-            "voice": args.voice, "language": "en", "theme": args.theme,
-            "safe_bottom": safe_bottom}
+            "voice": args.voice, "voice_source": args.voice_source,
+            "language": "en", "theme": args.theme, "safe_bottom": safe_bottom}
     if min_length:
         proj["min_length"] = min_length
     brand_note = None
@@ -127,7 +127,9 @@ def main(argv=None):
     s.add_argument("--outdir", default="outputs")
     s.add_argument("--aspect", default="9:16", choices=list(ASPECTS))
     s.add_argument("--fps", type=int, default=30)
-    s.add_argument("--voice", default="af_heart")
+    s.add_argument("--voice", default="af_heart", help="Kokoro voice (when voice-source=kokoro)")
+    s.add_argument("--voice-source", default="kokoro", choices=["kokoro", "operator"], dest="voice_source",
+                   help="kokoro = local TTS; operator = your recorded voiceover (`explainer record`)")
     s.add_argument("--theme", default="midnight", choices=list(themes.THEMES))
     s.add_argument("--platform", default=None, choices=list(presets.PLATFORMS),
                    help="sets aspect + safe-zone (+ min length) from a platform preset")

@@ -71,6 +71,11 @@ class Project:
     @property
     def voice(self): return self.data.get("voice", "af_heart")
     @property
+    def voice_source(self): return self.data.get("voice_source", "kokoro")  # kokoro | operator
+    @property
+    def voiceover_dir(self):
+        p = self.dir / "voiceover"; p.mkdir(exist_ok=True); return p
+    @property
     def brand(self):
         return self.data.get("brand")
 

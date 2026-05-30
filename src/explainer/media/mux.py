@@ -31,7 +31,7 @@ def _mux_one(proj, aspect, fps):
         cmd += ["-map", "0:v", "-map", "1:a"]
     cmd += ["-c:v", "h264_videotoolbox", "-b:v", "8M", "-pix_fmt", "yuv420p",
             "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709",
-            "-color_range", "tv", "-c:a", "aac_at", "-b:a", "192k",
+            "-color_range", "tv", "-c:a", "aac_at", "-b:a", "192k", "-ar", "48000",
             "-movflags", "+faststart", "-shortest", str(out)]
     t0 = time.time()
     subprocess.run(cmd, check=True, capture_output=True)
