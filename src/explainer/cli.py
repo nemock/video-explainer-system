@@ -49,8 +49,10 @@ def cmd_scaffold(args):
     if args.brand:
         bdir, bdata = brand.resolve(args.brand)
         if bdir:
-            proj["brand"] = brand.copy_into(out, bdir, bdata, args.brand)
-            brand_note = f"brand '{args.brand}' ({proj['brand']['name']}) — watermark + CTA auto-added"
+            proj["brand"] = brand.copy_into(out, bdir, bdata, args.brand, cta_variant=args.cta)
+            cv = proj["brand"].get("cta_variant")
+            brand_note = (f"brand '{args.brand}' ({proj['brand']['name']}) — watermark + CTA auto-added"
+                          + (f" [cta: {cv}]" if cv else ""))
         else:
             brand_note = f"brand '{args.brand}' NOT FOUND in ./brand/ or ~/.claude/explainer-brands/ — skipped"
     (out / "project.json").write_text(json.dumps(proj, indent=2))
@@ -163,6 +165,8 @@ def main(argv=None):
                    help="minimum playback seconds (sets manifest length_warning if unmet)")
     s.add_argument("--brand", default=None,
                    help="brand slug (e.g. ACME); adds watermark + auto CTA end slide from the brand library")
+    s.add_argument("--cta", default=None,
+                   help="CTA variant name from the brand's cta_library.json (else the library default / brand.json cta)")
     s.set_defaults(func=cmd_scaffold)
 
     m = sub.add_parser("media", help="run the pure-Python media pipeline on a project dir")

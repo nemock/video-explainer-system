@@ -223,6 +223,13 @@ and synced. You don't author the CTA slide/segment — the pipeline adds them fr
 (author your own `{"id":"cta","type":"cta"}` slide / `slide:"cta"` segment only to override).
 The `url` is on-screen text only — the tool still never links out or posts.
 
+**Rotating CTAs (`--cta <variant>`).** A brand folder may hold a hand-editable
+`cta_library.json` with named variants (e.g. `book`, `newsletter`), each with its own
+headline/subkicker/url/spoken + optional `product` image. `explainer scaffold … --brand FFW
+--cta newsletter` picks one; with no `--cta` the library `default` (then brand.json `cta`)
+is used. Lets the operator maintain rotating CTAs by hand without touching code — and a
+routine just passes the variant it chose.
+
 ## Voiceover mode — the operator's real voice (`--voice-source operator`)
 For higher-production pieces, the narration can be **the operator reading the script**, instead of
 Kokoro. The pipeline is audio-first, so a real recording aligns to the slides exactly like Kokoro
