@@ -27,3 +27,7 @@ phase0/video/
 
 # OS
 .DS_Store
+
+# Brand/logo assets must NOT live in this dev repo (use ~/.claude/explainer-brands/)
+BRG Logos/
+*.png.import
