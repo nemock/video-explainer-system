@@ -1,0 +1,29 @@
+[project]
+name = "explainer-system"
+version = "0.1.0"
+description = "Local-first generation of HTML explainer decks + narrated video"
+requires-python = ">=3.12"
+# Versions pinned to the verified-working stack on the M3 (see phase0/README.md).
+# NOTE: the media pipeline currently runs via the shared `myenv` interpreter, which
+# already holds the multi-GB torch/Kokoro stack. `uv sync` into an isolated project
+# venv is the reproducibility target but re-downloads torch (~GB); run it when you
+# want isolation. `uv lock` (resolution only) is cheap and produces uv.lock.
+dependencies = [
+    "kokoro==0.9.4",
+    "torch==2.7.1",
+    "torchaudio==2.7.1",
+    "soundfile==0.13.1",
+    "numpy==2.1.3",
+    "playwright==1.60.0",
+    "pymupdf==1.27.2.2",
+]
+
+[project.scripts]
+explainer = "explainer.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/explainer"]

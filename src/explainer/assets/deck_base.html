@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{TITLE}}</title>
+<style>
+:root { --bg: {{BG}}; --fg: {{FG}}; --accent: {{ACCENT}}; --accent2: {{ACCENT2}}; }
+#stage { width: {{W}}px; height: {{H}}px; }
+{{CSS}}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="caption"></div>
+<script>window.DECK = {{DECK_JSON}};</script>
+<script>{{ENGINE}}</script>
+</body>
+</html>
