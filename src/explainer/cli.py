@@ -6,7 +6,7 @@ from datetime import date
 from pathlib import Path
 
 from .project import Project, ASPECTS
-from . import deckbuild, manifest, wiki
+from . import deckbuild, manifest, wiki, ingest
 from .media import synth, align, render, mux
 
 STAGES = [("narrate", synth.run), ("align", align.run), ("deck", deckbuild.run),
@@ -63,6 +63,17 @@ def cmd_stage(args):
     print(json.dumps(fn(proj), indent=2))
 
 
+def cmd_ingest(args):
+    proj = Project.load(args.project_dir)
+    if args.pdf:
+        print(json.dumps(ingest.ingest_pdf(proj, args.pdf, pages=args.pages), indent=2))
+    elif args.url:
+        print(json.dumps(ingest.ingest_url(proj, args.url, full_page=args.full_page), indent=2))
+    else:
+        print("provide --pdf <path> or --url <url>")
+        return 1
+
+
 def cmd_wiki(args):
     if args.kind == "source":
         path = wiki.add_node(args.root, "source", args.name, args.body or args.name,
@@ -96,6 +107,14 @@ def main(argv=None):
         sp = sub.add_parser(st, help=f"run only the {st} stage")
         sp.add_argument("project_dir")
         sp.set_defaults(func=cmd_stage, stage=st)
+
+    ing = sub.add_parser("ingest", help="ingest source material (PDF/URL) into sources/")
+    ing.add_argument("project_dir")
+    ing.add_argument("--pdf", default=None, help="path to a PDF to ingest")
+    ing.add_argument("--url", default=None, help="URL to screenshot + extract")
+    ing.add_argument("--pages", default=None, help="PDF pages to render, e.g. '1-3,5' (default first 4)")
+    ing.add_argument("--full-page", action="store_true", help="full-page URL screenshot")
+    ing.set_defaults(func=cmd_ingest)
 
     wk = sub.add_parser("wiki", help="add a wiki node")
     wk.add_argument("kind", choices=["source", "fact"])

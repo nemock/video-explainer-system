@@ -38,6 +38,9 @@
         return '<div class="barcol"><div class="bar ' + (b.kind === 'bad' ? 'bad' : '') +
           '" data-val="' + (b.value || 0) + '"></div><div class="barlabel">' + (b.label || '') + '</div></div>';
       }).join('') + '</div>';
+    } else if (s.type === 'figure') {
+      html += '<div class="figframe"><img src="' + s.image + '" alt=""></div>';
+      if (s.caption) html += '<div class="figcaption">' + s.caption + '</div>';
     } else {
       var cls = (s.headline && s.headline.length > 60) ? 'headline sm' : 'headline';
       html += '<div class="' + cls + '">' + headlineHTML(s.headline || '', s.accent, s.accent2) + '</div>';
@@ -76,8 +79,8 @@
     if (captionEl.dataset.sig !== sig) {
       captionEl.dataset.sig = sig; captionEl.innerHTML = '';
       // size caption to viewport; place above the bottom safe area
-      captionEl.style.bottom = Math.round(tl.height * 0.18) + 'px';
-      var fs = Math.round(tl.width * 0.052);
+      captionEl.style.bottom = Math.round(tl.height * 0.14) + 'px';
+      var fs = Math.round(Math.min(tl.width, tl.height) * 0.052);  // short-side => consistent across aspects
       words.forEach(function (w) {
         var sp = document.createElement('span'); sp.className = 'w'; sp.textContent = w.word;
         sp.style.fontSize = fs + 'px'; captionEl.appendChild(sp);

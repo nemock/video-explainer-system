@@ -9,6 +9,12 @@ ASSETS = Path(__file__).parent / "assets"
 
 def run(proj):
     deck = json.loads(proj.deck_json.read_text())
+    # figure images are authored relative to the project root (e.g. "sources/x.png");
+    # the deck lives one level down in deck/, so resolve to "../sources/x.png".
+    for s in deck.get("slides", []):
+        img = s.get("image")
+        if s.get("type") == "figure" and img and not img.startswith(("/", "../", "http")):
+            s["image"] = "../" + img
     theme = proj.theme
     w, h = proj.size
     base = (ASSETS / "deck_base.html").read_text()

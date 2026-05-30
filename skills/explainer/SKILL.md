@@ -5,9 +5,10 @@ description: >-
   and a narrated vertical video, end-to-end, using only local/free tools (Kokoro
   TTS, torchaudio forced alignment, Playwright, ffmpeg) plus this Claude session.
   Use when the user wants to "make an explainer video", "turn this into a Short/
-  Reel/TikTok", "create an explainer deck", or "/explainer <topic>". Phase 1:
-  topic-only, 9:16, fixed theme. Generation only — it writes a labeled output dir
-  + manifest.json; it does NOT post to social platforms.
+  Reel/TikTok", "create an explainer deck", or "/explainer <topic>". Supports
+  topic-only OR source-driven (ingest a PDF/URL and frame a real figure/screenshot);
+  aspects 9:16, 16:9, 4:5; fixed theme. Generation only — it writes a labeled output
+  dir + manifest.json; it does NOT post to social platforms.
 ---
 
 # /explainer
@@ -44,6 +45,17 @@ explainer scaffold "<slug>" --title "<title>" [--aspect 9:16] [--fps 30] [--voic
 This creates `outputs/<date>_<slug>/project.json` and prints the project dir. Use that dir
 for everything below.
 
+### 2b. Ingest source material (source-driven runs only)
+If the user gave a PDF or URL, ingest it into `sources/` + `citations.json`:
+```
+explainer ingest <project_dir> --pdf <path> [--pages "1-3,5"]
+explainer ingest <project_dir> --url <url> [--full-page]
+```
+This extracts text and renders framed screenshots/figures. To feature a **specific
+figure** (not a whole page), it's fine to render a tight clip with PyMuPDF
+(`page.get_pixmap(matrix=fitz.Matrix(3,3), clip=fitz.Rect(...))`) into `sources/`.
+Read the extracted text to ground the script; reference an image in a `figure` slide (below).
+
 ### 3. Research (+ wiki)
 - First **reuse** prior knowledge: read `wiki/INDEX.md` and any relevant `wiki/source-fact/*`
   nodes so you don't re-research what's already captured.
@@ -79,9 +91,14 @@ Spell tricky tokens phonetically for Kokoro (e.g. "GPT four", not "GPT-4"); acro
   { "id": "s3", "type": "diagram", "kicker": "<label>",
     "bars": [ { "label": "<a>", "value": 0.9, "kind": "good" },
               { "label": "<b>", "value": 0.3, "kind": "bad" } ] },
-  { "id": "s4", "type": "payoff", "headline": "<text>", "accent": ["word"], "subkicker": "<a · b · c>" }
+  { "id": "s4", "type": "figure", "kicker": "<source attribution>",
+    "image": "sources/<file>.png", "caption": "<one-line description of the figure>" },
+  { "id": "s5", "type": "payoff", "headline": "<text>", "accent": ["word"], "subkicker": "<a · b · c>" }
 ] }
 ```
+`figure` slides frame an ingested screenshot/figure (white card on the dark theme); the
+`image` path is relative to the project root (e.g. `sources/x.png`). Use them to feature
+real source material on source-driven runs.
 Rules: every slide has motion by construction; `accent`/`accent2` highlight words by the
 theme colors; keep headlines tight (they auto-shrink past ~60 chars). Keep `id`s identical
 across the two files. Aim for 4–6 slides for a ~20–40s Short.
@@ -113,6 +130,13 @@ Tell the user the output dir and the key artifacts:
 - `manifest.json` (`ready_for_post`, AI-disclosure, per-platform captions)
 Spot-check one rendered frame in `work/frames/` to confirm layout/legibility before declaring done.
 
-## Out of scope (Phase 1)
-Multi-aspect, source-PDF ingestion + screenshots, template *family*/themes, music, operator
-`--interview` voice capture, C2PA embedding — these are later phases (see PRD). Don't fake them.
+## Aspects
+Scaffold with `--aspect 9:16` (Shorts/TikTok/Reels), `16:9` (YouTube/LinkedIn), or `4:5`
+(in-feed). The deck sizing is short-side based, so all aspects render consistently. Pick the
+aspect to match the target platform; one project renders one aspect (multi-aspect from one
+project is Phase 4).
+
+## Out of scope (current phase)
+Template *family*/multiple themes, music + beat-sync, operator `--interview` voice capture,
+C2PA embedding, per-platform safe-zone insets, simultaneous multi-aspect — these are later
+phases (see PRD). Don't fake them.
