@@ -1,0 +1,22 @@
+# Local Claude Code session / scheduled-task state
+.claude/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.uv/
+
+# Node / Playwright
+node_modules/
+
+# Local model caches / downloads
+models/
+.cache/
+
+# Per-run generated artifacts (heavy; not source)
+outputs/
+frames/
+
+# OS
+.DS_Store
