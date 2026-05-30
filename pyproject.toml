@@ -1,6 +1,6 @@
 [project]
 name = "explainer-system"
-version = "0.1.0"
+version = "1.0.0"
 description = "Local-first generation of HTML explainer decks + narrated video"
 requires-python = ">=3.12"
 # Versions pinned to the verified-working stack on the M3 (see phase0/README.md).

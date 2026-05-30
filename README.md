@@ -4,6 +4,8 @@ A **local-first Claude Code skill** (`/explainer`) that turns a topic or a sourc
 
 It runs on Apple Silicon (an M3/16 GB Mac), renders a 20–30 s short in roughly a minute, and stops at a clean, labeled output directory + a versioned `manifest.json` ready for a downstream poster. It does **not** post to social platforms — generation only.
 
+*Status: **v1.0.0** — built, working, and polished enough that the tool generated [its own explainer video](#) about itself. Built as a Claude Code skill.*
+
 ---
 
 ## Why this exists
