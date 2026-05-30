@@ -85,8 +85,8 @@
   var slideEls = {};
   Array.prototype.forEach.call(stage.children, function (el) { slideEls[el.dataset.id] = el; });
   var DECK_MOTION = DECK.motion || 'rise';
-  var styleById = {};
-  DECK.slides.forEach(function (s) { styleById[s.id] = s.transition || DECK_MOTION; });
+  var styleById = {}, typeById = {};
+  DECK.slides.forEach(function (s) { styleById[s.id] = s.transition || DECK_MOTION; typeById[s.id] = s.type; });
   // reserve the bottom caption zone so centered content never collides with captions
   // (critical for short aspects like 1:1 / 16:9 which have far less vertical room than 9:16)
   var _reserve = Math.round(window.innerHeight * ((DECK.safe_bottom || 0.14) + 0.12));
@@ -116,6 +116,11 @@
       }
     });
 
+    // no kinetic captions on the CTA end card — the CTA text is already on screen
+    if (typeById[active.id] === 'cta') {
+      if (captionEl.dataset.sig !== 'cta') { captionEl.innerHTML = ''; captionEl.dataset.sig = 'cta'; }
+      return;
+    }
     // kinetic captions for the active slide
     var words = tl.words.filter(function (w) { return w.slide === active.id; });
     var sig = active.id + ':' + words.length;
