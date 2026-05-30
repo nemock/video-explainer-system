@@ -89,22 +89,34 @@ as letters/words while captions still show the acronym. Add a `<project>/lexicon
 (`{"token": "spoken form"}`) for any term the default lexicon misses. Spell out numbers you
 want read a certain way (e.g. "ninety seven million").
 
-`deck.json` — one slide per id, fixed-theme slide **types**:
+`deck.json` — one slide per id. **Pick the device that proves each point** — the full
+catalog (schemas + when-to-use) is **[docs/visual-devices.md](../../docs/visual-devices.md)**.
+Devices: narrative (`hook` · `statement` · `payoff` · `quote`), data (`stat` · `statgrid` ·
+`progress` · `diagram` · `compare` · `steps`), source (`figure`), brand (`cta`, auto).
 ```json
 { "title": "<deck title>", "slides": [
-  { "id": "s1", "type": "hook", "kicker": "<small label>", "headline": "<text>", "accent": ["word"] },
-  { "id": "s2", "type": "statement", "headline": "<text>", "accent2": ["word"] },
-  { "id": "s3", "type": "diagram", "kicker": "<label>",
-    "bars": [ { "label": "<a>", "value": 0.9, "kind": "good" },
-              { "label": "<b>", "value": 0.3, "kind": "bad" } ] },
-  { "id": "s4", "type": "figure", "kicker": "<source attribution>",
-    "image": "sources/<file>.png", "caption": "<one-line description of the figure>" },
-  { "id": "s5", "type": "payoff", "headline": "<text>", "accent": ["word"], "subkicker": "<a · b · c>" }
+  { "id": "s1", "type": "hook", "kicker": "<label>", "headline": "<text>", "accent": ["word"] },
+  { "id": "s2", "type": "stat", "kicker": "<label>", "value": "90%", "label": "<context>" },
+  { "id": "s3", "type": "statgrid", "stats": [ { "value": "$2M", "label": "<a>" }, { "value": "3x", "label": "<b>" } ] },
+  { "id": "s4", "type": "progress", "value": "73%", "label": "<context>" },
+  { "id": "s5", "type": "diagram", "kicker": "<label>",
+    "bars": [ { "label": "<a>", "value": 0.9, "kind": "good" }, { "label": "<b>", "value": 0.3, "kind": "bad" } ] },
+  { "id": "s6", "type": "compare", "left": { "title": "<a>", "value": "<x>", "kind": "bad" },
+    "right": { "title": "<b>", "value": "<y>", "kind": "good" } },
+  { "id": "s7", "type": "steps", "steps": [ { "title": "<step 1>" }, { "title": "<step 2>" } ] },
+  { "id": "s8", "type": "quote", "quote": "<verbatim line>", "attribution": "<who>" },
+  { "id": "s9", "type": "figure", "kicker": "<source>", "image": "sources/<file>.png", "caption": "<desc>" },
+  { "id": "s10", "type": "payoff", "headline": "<text>", "accent": ["word"], "subkicker": "<a · b · c>" }
 ] }
 ```
-`figure` slides frame an ingested screenshot/figure (white card on the dark theme); the
-`image` path is relative to the project root (e.g. `sources/x.png`). Use them to feature
-real source material on source-driven runs.
+`stat`/`statgrid` count their numbers up; `progress`/`diagram` bars grow; `steps`/`statgrid`
+reveal in sequence — all driven deterministically by `renderAt(t)`. `figure` frames an
+ingested screenshot (white card); `image` is relative to the project root.
+
+**Vary your devices (anti-monotony).** Across a deck use **4+ distinct device types**, and
+**never repeat the same data device** (`diagram`/`stat`/`progress`) unless the data demands
+it — a deck that reuses one bar chart reads as templated. Use `quote` for verbatim
+talk-time one-liners; use `stat` when a single number carries the point.
 
 Each slide may set `"transition"` (`rise` · `fade` · `pop` · `slide`) to override the
 theme's default intro motion. **Vary it** across slides — don't repeat the same transition

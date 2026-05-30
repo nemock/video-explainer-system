@@ -26,6 +26,26 @@
 
   function easeOut(x) { x = Math.min(1, Math.max(0, x)); return 1 - Math.pow(1 - x, 3); }
 
+  // --- stat count-up: parse "$2.5M" / "90%" / "10,000" / "3x" and animate 0 -> value ---
+  function splitNum(s) {
+    var m = String(s).match(/^(\D*)([\d,]*\.?\d+)(.*)$/);
+    if (!m) return null;
+    var raw = m[2].replace(/,/g, '');
+    return { pre: m[1], num: parseFloat(raw), suf: m[3],
+             dec: (raw.split('.')[1] || '').length, comma: m[2].indexOf(',') >= 0 };
+  }
+  function fmtStat(v, info) {
+    var s = info.dec > 0 ? v.toFixed(info.dec) : String(Math.round(v));
+    if (info.comma) s = Number(s).toLocaleString('en-US');
+    return info.pre + s + info.suf;
+  }
+  function countUp(eln, g) {
+    if (!eln) return;
+    if (eln.__info === undefined) eln.__info = splitNum(eln.dataset.val);
+    var info = eln.__info; if (!info) return;  // non-numeric -> leave the literal text
+    eln.textContent = fmtStat(info.num * Math.max(0, Math.min(1, g)), info);
+  }
+
   // intro transition styles (theme motion personality + per-slide override, PRD §8.4)
   function introTransform(style, p) {
     switch (style) {
@@ -63,6 +83,39 @@
         return '<div class="barcol"><div class="bar ' + (b.kind === 'bad' ? 'bad' : '') +
           '" data-val="' + (b.value || 0) + '"></div><div class="barlabel">' + (b.label || '') + '</div></div>';
       }).join('') + '</div>';
+    } else if (s.type === 'stat') {
+      html += '<div class="statnum" data-val="' + (s.value || '') + '">' + (s.value || '') + '</div>';
+      if (s.label) html += '<div class="statlabel">' + s.label + '</div>';
+    } else if (s.type === 'statgrid') {
+      html += '<div class="statgrid">' + (s.stats || []).map(function (st) {
+        return '<div class="statcell"><div class="statnum" data-val="' + (st.value || '') + '">' +
+          (st.value || '') + '</div><div class="statlabel">' + (st.label || '') + '</div></div>';
+      }).join('') + '</div>';
+    } else if (s.type === 'progress') {
+      html += '<div class="progresspct">0%</div>' +
+        '<div class="progresstrack"><div class="progressfill" data-val="' + (s.value || 0) + '"></div></div>';
+      if (s.label) html += '<div class="statlabel">' + s.label + '</div>';
+    } else if (s.type === 'compare') {
+      var L = s.left || {}, R = s.right || {};
+      html += '<div class="compare">' +
+        '<div class="cmpcard ' + (L.kind === 'bad' ? 'bad' : 'good') + '"><div class="cmptitle">' +
+          (L.title || '') + '</div><div class="cmpval">' + (L.value || '') + '</div></div>' +
+        '<div class="cmpvs">vs</div>' +
+        '<div class="cmpcard ' + (R.kind === 'bad' ? 'bad' : 'good') + '"><div class="cmptitle">' +
+          (R.title || '') + '</div><div class="cmpval">' + (R.value || '') + '</div></div>' +
+        '</div>';
+    } else if (s.type === 'steps') {
+      html += '<div class="steps">' + (s.steps || []).map(function (st, i) {
+        var title = (typeof st === 'string') ? st : (st.title || '');
+        var text = (typeof st === 'string') ? '' : (st.text || '');
+        return '<div class="step"><div class="stepnum">' + (i + 1) + '</div><div class="stepbody">' +
+          '<div class="steptitle">' + title + '</div>' +
+          (text ? '<div class="steptext">' + text + '</div>' : '') + '</div></div>';
+      }).join('') + '</div>';
+    } else if (s.type === 'quote') {
+      html += '<div class="quoteblock"><div class="quotemark">“</div><div class="quotetext">' +
+        (s.quote || s.headline || '') + '</div>' +
+        (s.attribution ? '<div class="quoteattr">— ' + s.attribution + '</div>' : '') + '</div>';
     } else if (s.type === 'figure') {
       html += '<div class="figframe"><img src="' + s.image + '" alt=""></div>';
       if (s.caption) html += '<div class="figcaption">' + s.caption + '</div>';
@@ -111,11 +164,32 @@
       var p = easeOut((t - win.start) / Math.min(0.6, span));
       el.style.opacity = p;
       el.style.transform = introTransform(styleById[win.id] || DECK_MOTION, p);
-      if (el.dataset.type === 'diagram') {
+      var rt = el.dataset.type;
+      if (rt === 'diagram') {
         var g = easeOut((t - win.start) / Math.min(1.0, span));
         var barMax = window.innerHeight * 0.28;  // scale bars to viewport height
         Array.prototype.forEach.call(el.querySelectorAll('.bar'), function (bar) {
           bar.style.height = (g * parseFloat(bar.dataset.val) * barMax) + 'px';
+        });
+      } else if (rt === 'stat') {
+        countUp(el.querySelector('.statnum'), easeOut((t - win.start) / Math.min(1.0, span)));
+      } else if (rt === 'progress') {
+        var pg = easeOut((t - win.start) / Math.min(1.0, span));
+        var fill = el.querySelector('.progressfill'), pe = el.querySelector('.progresspct');
+        var pv = parseFloat(fill.dataset.val); pv = pv > 1 ? pv / 100 : pv;  // accept 0.73 or 73 or "73%"
+        fill.style.width = (pg * pv * 100).toFixed(1) + '%';
+        if (pe) pe.textContent = Math.round(pg * pv * 100) + '%';
+      } else if (rt === 'statgrid') {
+        Array.prototype.forEach.call(el.querySelectorAll('.statcell'), function (c, idx) {
+          var cg = easeOut((t - win.start - idx * 0.14) / Math.min(0.8, span));  // staggered
+          c.style.opacity = Math.max(0, cg);
+          countUp(c.querySelector('.statnum'), cg);
+        });
+      } else if (rt === 'steps') {
+        Array.prototype.forEach.call(el.querySelectorAll('.step'), function (st, idx) {
+          var sg = easeOut((t - win.start - idx * 0.16) / Math.min(0.7, span));  // sequential reveal
+          st.style.opacity = Math.max(0, sg);
+          st.style.transform = 'translateX(' + ((1 - Math.max(0, sg)) * -28).toFixed(1) + 'px)';
         });
       }
     });
