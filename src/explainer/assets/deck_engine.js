@@ -12,6 +12,18 @@
   var ambient = document.getElementById('ambient');
   if (ambient && DECK.ambient === false) { ambient.style.display = 'none'; ambient = null; }
 
+  // persistent brand watermark on every slide, in a bottom corner within the safe zone
+  if (DECK.watermark) {
+    var wm = document.createElement('img');
+    wm.id = 'watermark'; wm.src = DECK.watermark;
+    var wmSize = Math.round(Math.min(window.innerWidth, window.innerHeight) * 0.085);
+    wm.style.width = wm.style.height = wmSize + 'px';
+    wm.style.bottom = Math.round(window.innerHeight * ((DECK.safe_bottom || 0.14) * 0.5 + 0.03)) + 'px';
+    var inset = Math.round(window.innerWidth * 0.045) + 'px';
+    if ((DECK.watermark_corner || 'bl') === 'br') wm.style.right = inset; else wm.style.left = inset;
+    document.body.appendChild(wm);
+  }
+
   function easeOut(x) { x = Math.min(1, Math.max(0, x)); return 1 - Math.pow(1 - x, 3); }
 
   // intro transition styles (theme motion personality + per-slide override, PRD §8.4)
@@ -54,6 +66,13 @@
     } else if (s.type === 'figure') {
       html += '<div class="figframe"><img src="' + s.image + '" alt=""></div>';
       if (s.caption) html += '<div class="figcaption">' + s.caption + '</div>';
+    } else if (s.type === 'cta') {
+      var b = DECK.brand || {}, c = b.cta || {};
+      if (b.product) html += '<div class="figframe cta-product"><img src="' + b.product + '" alt=""></div>';
+      if (b.logo) html += '<img class="cta-logo" src="' + b.logo + '" alt="">';
+      if (c.headline) html += '<div class="headline sm cta-head">' + c.headline + '</div>';
+      if (c.subkicker) html += '<div class="subkicker">' + c.subkicker + '</div>';
+      if (c.url) html += '<div class="cta-url">' + c.url + '</div>';
     } else {
       var cls = (s.headline && s.headline.length > 60) ? 'headline sm' : 'headline';
       html += '<div class="' + cls + '">' + headlineHTML(s.headline || '', s.accent, s.accent2) + '</div>';

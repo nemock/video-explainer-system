@@ -6,7 +6,7 @@ from datetime import date
 from pathlib import Path
 
 from .project import Project, ASPECTS
-from . import deckbuild, manifest, wiki, ingest, themes, qa, presets, validate, handoff
+from . import deckbuild, manifest, wiki, ingest, themes, qa, presets, validate, handoff, brand
 from .media import synth, align, render, mux
 
 STAGES = [("narrate", synth.run), ("align", align.run), ("deck", deckbuild.run),
@@ -45,8 +45,16 @@ def cmd_scaffold(args):
             "safe_bottom": safe_bottom}
     if min_length:
         proj["min_length"] = min_length
+    brand_note = None
+    if args.brand:
+        bdir, bdata = brand.resolve(args.brand)
+        if bdir:
+            proj["brand"] = brand.copy_into(out, bdir, bdata, args.brand)
+            brand_note = f"brand '{args.brand}' ({proj['brand']['name']}) — watermark + CTA auto-added"
+        else:
+            brand_note = f"brand '{args.brand}' NOT FOUND in ./brand/ or ~/.claude/explainer-brands/ — skipped"
     (out / "project.json").write_text(json.dumps(proj, indent=2))
-    print(json.dumps({"project_dir": str(out), "aspects": aspects,
+    print(json.dumps({"project_dir": str(out), "aspects": aspects, "brand": brand_note,
                       "next": "author script.json + deck.json, then `explainer media <dir>`"}, indent=2))
 
 
@@ -126,6 +134,8 @@ def main(argv=None):
     s.add_argument("--aspects", default=None, help="comma list to render simultaneously, e.g. '9:16,1:1'")
     s.add_argument("--min-length", type=int, default=None, dest="min_length",
                    help="minimum playback seconds (sets manifest length_warning if unmet)")
+    s.add_argument("--brand", default=None,
+                   help="brand slug (e.g. FFW); adds watermark + auto CTA end slide from the brand library")
     s.set_defaults(func=cmd_scaffold)
 
     m = sub.add_parser("media", help="run the pure-Python media pipeline on a project dir")

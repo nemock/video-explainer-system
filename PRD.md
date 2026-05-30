@@ -351,6 +351,20 @@ A 5-lens council (local-tooling feasibility · visual quality/engagement · prod
 
 ---
 
+### Branding & call-to-action (operator-directed addition, 2026-05-30, tag v0.7.0)
+A **brand library** in the *consuming* project's space (not this repo), resolved **local-first
+then global**: `./brand/<SLUG>/` → `$EXPLAINER_BRAND_DIR/` → `~/.claude/explainer-brands/<SLUG>/`.
+Each `brand/<SLUG>/` has `brand.json` + assets (a transparent **logo** + optional **product**
+image, e.g. a book cover) + CTA copy. `--brand FFW` copies the assets into the output dir
+(self-contained), **watermarks every slide** with the logo in a safe-zone corner, auto-tints
+the theme to the brand `accent`, and **auto-appends a CTA end slide** (product + larger logo +
+headline/subkicker/url) with the brand's `cta.spoken` line **auto-narrated and synced** — the
+pipeline adds both the CTA slide and its narration from the brand (no authoring needed). The
+`url` is on-screen text only; the generation-only/no-post boundary holds. New `cta` slide type;
+`brand.py` resolution + asset copy; `--brand` scaffold flag.
+
+---
+
 ## 17. Recommendation (how to build this)
 
 **Build it as a Claude Code skill that orchestrates pinned Python helpers, in this order, with the generation/media split as the central architectural rule.** Concretely:

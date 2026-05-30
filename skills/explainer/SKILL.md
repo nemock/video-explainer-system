@@ -40,7 +40,7 @@ One cheap confirmation, then proceed.
 
 ### 2. Scaffold
 ```
-explainer scaffold "<slug>" --title "<title>" [--aspect 9:16] [--fps 30] [--voice af_heart] [--theme midnight]
+explainer scaffold "<slug>" --title "<title>" [--aspect 9:16] [--theme midnight] [--brand FFW]
 ```
 Themes (a *family* of looks — vary them across a channel, PRD §8.5): `midnight` (default,
 cool dark), `paper` (light), `sunset` (warm dark), `forest` (green dark), `mono` (yellow on
@@ -171,6 +171,27 @@ Spot-check one rendered frame in `work/frames/` to confirm layout/legibility bef
 Set `"music": "<path>"` (and optionally `"music_gain": 0.16`) in `project.json` to mix a
 low royalty-free bed under the narration (recommended for 9:16; off for 16:9/deck). No audio
 ships with the tool — provide your own vetted, licensed track.
+
+## Branding & call-to-action (`--brand <SLUG>`)
+Pass a brand slug to stamp the video with a brand and a CTA. Resolution is **local-first
+then global**: `./brand/<SLUG>/` (the content project you run from) → `$EXPLAINER_BRAND_DIR/`
+→ `~/.claude/explainer-brands/<SLUG>/`. A brand folder holds `brand.json` + assets:
+```json
+{ "name": "Founders Who Finish",
+  "logo": "logo.png",            // transparent PNG — small corner watermark on EVERY slide + larger on the CTA
+  "product": "product.png",      // optional — e.g. a book cover, shown on the CTA slide
+  "watermark_corner": "bl",      // bl | br
+  "accent": "#5b8cff",           // optional — tints the theme accent to brand color
+  "cta": { "headline": "Read the book.", "subkicker": "Out now",
+           "url": "founderswhofinish.com",
+           "spoken": "Grab my book, Founders Who Finish — link in bio." } }
+```
+When `--brand` is set: assets are copied into the output dir (self-contained), the **logo
+watermarks every slide** in the safe-zone corner, and a **CTA end slide is auto-appended**
+(product + larger logo + headline/subkicker/url) **with the `cta.spoken` line auto-narrated**
+and synced. You don't author the CTA slide/segment — the pipeline adds them from the brand
+(author your own `{"id":"cta","type":"cta"}` slide / `slide:"cta"` segment only to override).
+The `url` is on-screen text only — the tool still never links out or posts.
 
 ## Out of scope (current phase)
 Music *beat-sync*, operator `--interview` voice capture, **C2PA embedding** (needs c2patool +

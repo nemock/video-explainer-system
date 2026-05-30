@@ -19,6 +19,22 @@ def run(proj):
     deck["motion"] = theme.get("motion", "rise")  # theme's default per-slide intro
     deck["safe_bottom"] = proj.safe_bottom         # platform safe-zone inset for captions
     deck["ambient"] = bool(proj.data.get("ambient", True))  # drifting glow (set false for ~2x faster render)
+
+    # branding: watermark on every slide + an auto-appended CTA end slide (assets are
+    # project-relative, e.g. "brand/logo.png"; the deck lives one level down in deck/).
+    brand = proj.brand or {}
+    if brand:
+        if brand.get("logo"):
+            deck["watermark"] = "../" + brand["logo"]
+            deck["watermark_corner"] = brand.get("watermark_corner", "bl")
+        bc = {"name": brand.get("name", ""), "cta": brand.get("cta", {})}
+        if brand.get("logo"):
+            bc["logo"] = "../" + brand["logo"]
+        if brand.get("product"):
+            bc["product"] = "../" + brand["product"]
+        deck["brand"] = bc
+        if not any(s.get("id") == "cta" for s in deck.get("slides", [])):
+            deck.setdefault("slides", []).append({"id": "cta", "type": "cta"})
     w, h = proj.size
     base = (ASSETS / "deck_base.html").read_text()
     css = (ASSETS / "deck.css").read_text()

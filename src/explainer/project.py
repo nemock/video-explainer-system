@@ -71,9 +71,17 @@ class Project:
     @property
     def voice(self): return self.data.get("voice", "af_heart")
     @property
+    def brand(self):
+        return self.data.get("brand")
+
+    @property
     def theme(self):
         from . import themes
-        return themes.resolve(self.data.get("theme"))
+        t = themes.resolve(self.data.get("theme"))
+        b = self.brand or {}
+        if b.get("accent"):
+            t["accent"] = b["accent"]  # brand color overrides the theme accent
+        return t
 
     def write_json(self, rel_or_path, obj):
         p = rel_or_path if isinstance(rel_or_path, Path) else self.dir / rel_or_path
