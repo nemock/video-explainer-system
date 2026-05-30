@@ -5,8 +5,10 @@ Project overrides live in <project>/lexicon.json ({"token": "spoken form"})."""
 import json, re
 
 DEFAULT = {
-    "mcp": "M C P", "ai": "A I", "agi": "A G I", "llm": "L L M", "llms": "L L Ms",
-    "gpt": "G P T", "gpt4": "G P T four", "api": "A P I", "apis": "A P Is",
+    # A-initial acronyms use dotted initialisms: a bare "A" gets misread by misaki as the
+    # article schwa (/ə/, "uh") rather than the letter /eɪ/, so "A I" sounded like "eye".
+    "mcp": "M C P", "ai": "A.I.", "agi": "A.G.I.", "llm": "L L M", "llms": "L L Ms",
+    "gpt": "G P T", "gpt4": "G P T four", "api": "A.P.I.", "apis": "A.P.I.s",
     "sdk": "S D K", "ui": "U I", "ux": "U X", "url": "U R L", "urls": "U R Ls",
     "gpu": "G P U", "cpu": "C P U", "css": "C S S", "html": "H T M L",
     "http": "H T T P", "https": "H T T P S", "sql": "sequel", "json": "jason",
