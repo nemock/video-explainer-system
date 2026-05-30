@@ -106,6 +106,11 @@ def cmd_handoff(args):
     print(json.dumps(handoff.run(Project.load(args.project_dir)), indent=2))
 
 
+def cmd_record(args):
+    from . import recorder
+    print(json.dumps(recorder.run(Project.load(args.project_dir), open_browser=not args.no_open), indent=2))
+
+
 def cmd_wiki(args):
     if args.kind == "source":
         path = wiki.add_node(args.root, "source", args.name, args.body or args.name,
@@ -157,6 +162,11 @@ def main(argv=None):
     ing.add_argument("--pages", default=None, help="PDF pages to render, e.g. '1-3,5' (default first 4)")
     ing.add_argument("--full-page", action="store_true", help="full-page URL screenshot")
     ing.set_defaults(func=cmd_ingest)
+
+    rc = sub.add_parser("record", help="launch the integrated voiceover recorder (browser teleprompter)")
+    rc.add_argument("project_dir")
+    rc.add_argument("--no-open", action="store_true", help="don't auto-open the browser")
+    rc.set_defaults(func=cmd_record)
 
     va = sub.add_parser("validate", help="check the manifest is a complete handoff contract")
     va.add_argument("project_dir")
