@@ -225,5 +225,15 @@
     }
   };
 
-  window.__deckReady = true;
+  // Signal ready only once any declared @font-face glyphs are actually loaded, so the
+  // first captured frame uses real fonts (not a fallback). Themes with no `fonts` field
+  // declare zero faces, so this resolves immediately — no delay for them.
+  function signalReady() { window.__deckReady = true; }
+  if (document.fonts && document.fonts.size) {
+    var loads = [];
+    document.fonts.forEach(function (ff) { loads.push(ff.load().catch(function () {})); });
+    Promise.all(loads).then(function () { return document.fonts.ready; }).then(signalReady, signalReady);
+  } else {
+    signalReady();
+  }
 })();

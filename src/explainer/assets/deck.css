@@ -3,8 +3,12 @@
    JS by renderAt(t). See PRD §8.6. Theme tokens are injected as :root vars. */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { width: 100%; height: 100%; background: var(--bg); color: var(--fg);
-  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; overflow: hidden; }
+  font-family: var(--font-body, -apple-system, "Helvetica Neue", Arial, sans-serif); overflow: hidden; }
 #stage { position: relative; overflow: hidden; z-index: 1; }
+
+/* Display (serif) face — used only when a theme declares `fonts` (e.g. founder = Fraunces);
+   otherwise --font-display is unset and these inherit the body font, i.e. unchanged. */
+.headline, .statnum, .progresspct, .quotetext, .cmpval, .steptitle { font-family: var(--font-display, inherit); }
 
 /* ambient: a faint, slowly drifting glow so the frame is never fully static
    (continuous motion -> better perceived liveliness + no QA dead air). */

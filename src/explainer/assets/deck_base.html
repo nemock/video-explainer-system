@@ -5,6 +5,8 @@
 <title>{{TITLE}}</title>
 <style>
 :root { --bg: {{BG}}; --fg: {{FG}}; --accent: {{ACCENT}}; --accent2: {{ACCENT2}}; }
+/* @font-face + font-family vars, injected only when the theme declares `fonts` (else empty) */
+{{FONTCSS}}
 /* viewport-driven so ONE built deck renders at any aspect (the renderer sets the viewport) */
 #stage { width: 100vw; height: 100vh; }
 {{CSS}}

@@ -11,6 +11,12 @@ THEMES = {
     # BRG MedTech: cream bg, navy text, teal accent (+ warm-rust accent2 for caution/contrast).
     # Pair with a brand whose logo reads on cream (e.g. the navy-gradient BRG mark).
     "medtech":  {"bg": "#f5f0eb", "fg": "#1b2b4b", "accent": "#0d7377", "accent2": "#c2410c", "motion": "fade"},
+    # BRG Founder Tip Tuesday: deep-forest bg, parchment text, brass accent (+ clay accent2).
+    # The established FTT identity (forest #1E3A2F / brass #C9A24A / parchment #F0E8D2).
+    # Pair with a brand whose logo reads on forest (the BRGFTT brand). NOT the neon-green
+    # `forest` theme above. Fraunces display + Inter body via the optional `fonts` field.
+    "founder":  {"bg": "#1E3A2F", "fg": "#F0E8D2", "accent": "#C9A24A", "accent2": "#B5654A", "motion": "fade",
+                 "fonts": {"display": "Fraunces", "body": "Inter"}},
 }
 DEFAULT = "midnight"
 VALID_MOTION = {"rise", "fade", "pop", "slide"}

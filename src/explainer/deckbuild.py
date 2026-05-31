@@ -2,9 +2,51 @@
 assets. Content is data-driven (the engine renders slide types); Claude authors
 deck.json, never raw HTML, which keeps the determinism contract intact."""
 import json
+import shutil
 from pathlib import Path
 
 ASSETS = Path(__file__).parent / "assets"
+
+# Bundled variable woff2 (assets/fonts/) per family. A theme opts in via a
+# `fonts: {display, body}` field (see themes.py); families not listed here fall
+# back to the system stack. Variable files cover the full weight range + italic.
+FONT_FILES = {
+    "Fraunces": [("normal", "fraunces-wght-normal.woff2"), ("italic", "fraunces-wght-italic.woff2")],
+    "Inter": [("normal", "inter-wght-normal.woff2")],
+}
+FONT_STACK = {"Fraunces": "Georgia, serif", "Inter": "-apple-system, 'Helvetica Neue', Arial, sans-serif"}
+
+
+def _font_css(theme, deck_dir):
+    """Return CSS (@font-face rules + --font-display/--font-body vars) for a theme's
+    `fonts` field, copying the needed woff2 into <deck>/fonts/. Empty string when the
+    theme declares no fonts — so themes without `fonts` render exactly as before."""
+    fonts = theme.get("fonts") or {}
+    if not fonts:
+        return ""
+    faces, copied = [], set()
+    for role in ("display", "body"):
+        fam = fonts.get(role)
+        for style, fn in FONT_FILES.get(fam, []):
+            if fn in copied:
+                continue
+            src = ASSETS / "fonts" / fn
+            if not src.exists():
+                continue
+            (deck_dir / "fonts").mkdir(parents=True, exist_ok=True)
+            shutil.copy(src, deck_dir / "fonts" / fn)
+            faces.append(f"@font-face{{font-family:'{fam}';font-weight:100 900;"
+                         f"font-style:{style};font-display:block;src:url('fonts/{fn}') format('woff2');}}")
+            copied.add(fn)
+    vars_ = []
+    if fonts.get("display"):
+        vars_.append(f"--font-display:'{fonts['display']}',{FONT_STACK.get(fonts['display'], 'serif')};")
+    if fonts.get("body"):
+        vars_.append(f"--font-body:'{fonts['body']}',{FONT_STACK.get(fonts['body'], 'sans-serif')};")
+    out = "\n".join(faces)
+    if vars_:
+        out += f"\n:root{{{''.join(vars_)}}}"
+    return out
 
 
 def run(proj):
@@ -39,12 +81,14 @@ def run(proj):
     base = (ASSETS / "deck_base.html").read_text()
     css = (ASSETS / "deck.css").read_text()
     engine = (ASSETS / "deck_engine.js").read_text()
+    fontcss = _font_css(theme, proj.deck_dir)
 
     html = (base
             .replace("{{TITLE}}", str(deck.get("title", proj.data.get("title", "Explainer"))))
             .replace("{{BG}}", theme["bg"]).replace("{{FG}}", theme["fg"])
             .replace("{{ACCENT}}", theme["accent"]).replace("{{ACCENT2}}", theme["accent2"])
             .replace("{{W}}", str(w)).replace("{{H}}", str(h))
+            .replace("{{FONTCSS}}", fontcss)
             .replace("{{CSS}}", css)
             .replace("{{DECK_JSON}}", json.dumps(deck))
             .replace("{{ENGINE}}", engine))
