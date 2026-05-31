@@ -2,6 +2,7 @@
 name = "explainer-system"
 version = "1.0.0"
 description = "Local-first generation of HTML explainer decks + narrated video"
+license = "MIT"
 requires-python = ">=3.12"
 # Versions pinned to the verified-working stack on the M3 (see phase0/README.md).
 # NOTE: the media pipeline currently runs via the shared `myenv` interpreter, which

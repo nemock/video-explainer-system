@@ -1,5 +1,8 @@
 # video-explainer-system
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Star on GitHub](https://img.shields.io/github/stars/nemock/video-explainer-system?style=social)](https://github.com/nemock/video-explainer-system/stargazers)
+
 A **local-first Claude Code skill** (`/explainer`) that turns a topic or a source document into a **visually dynamic HTML explainer deck** and a **narrated, captioned MP4** — end to end, on your own machine, using only local/free tools plus a Claude subscription. **No paid SaaS anywhere in the generation path.**
 
 It runs on Apple Silicon (an M3/16 GB Mac), renders a 20–30 s short in roughly a minute, and stops at a clean, labeled output directory + a versioned `manifest.json` ready for a downstream poster. It does **not** post to social platforms — generation only.
@@ -127,4 +130,12 @@ A few minutes longer per render, run locally and free, with nothing leaving your
 
 ---
 
-*Built as a Claude Code skill. Design & build log: [PRD.md](PRD.md). Conventions: [CLAUDE.md](CLAUDE.md). Generation-only — this tool never posts to social platforms.*
+## Spread the word
+
+This is free and open source (MIT), and it isn't a business. If it's useful to you, a ⭐ on the repo genuinely helps other people find it.
+
+Found a bug, or want a feature? [Open an issue](https://github.com/nemock/video-explainer-system/issues) — I'm actively collecting feature ideas, and PRs are welcome.
+
+---
+
+*Built as a Claude Code skill. Design & build log: [PRD.md](PRD.md). Conventions: [CLAUDE.md](CLAUDE.md). Generation-only — this tool never posts to social platforms. Licensed under [MIT](LICENSE).*
