@@ -112,6 +112,118 @@
           '<div class="steptitle">' + title + '</div>' +
           (text ? '<div class="steptext">' + text + '</div>' : '') + '</div></div>';
       }).join('') + '</div>';
+    } else if (s.type === 'pictograph') {
+      var pf = Math.max(0, parseInt(s.filled, 10) || 0);
+      var ptot = Math.max(pf, parseInt(s.total, 10) || pf);
+      var pk = s.kind === 'bad' ? 'bad' : 'good';
+      var pcells = '';
+      for (var pi = 0; pi < ptot; pi++) pcells += '<div class="picto-cell ' + (pi < pf ? 'on ' + pk : '') + '"></div>';
+      // columns from the total so small/odd counts aren't ragged in a fixed 5-col grid
+      var pcols = ptot <= 5 ? ptot : (ptot % 5 === 0 ? 5 : (ptot % 4 === 0 ? 4 : (ptot % 3 === 0 ? 3 : 5)));
+      html += '<div class="pictograph" style="grid-template-columns:repeat(' + pcols + ',1fr)">' + pcells + '</div>';
+      if (s.label) html += '<div class="statlabel">' + s.label + '</div>';
+    } else if (s.type === 'trend') {
+      var tk = s.kind === 'bad' ? 'bad' : 'good';
+      el.dataset.points = JSON.stringify(s.points || []);
+      html += '<div class="trendwrap"><svg class="trend ' + tk + '" viewBox="0 0 100 60" preserveAspectRatio="none">' +
+        '<polyline class="trend-line" points=""></polyline></svg>' +
+        '<div class="trend-dot"></div><div class="trend-end">' + (s.end_label || '') + '</div></div>';
+      if (s.label) html += '<div class="statlabel">' + s.label + '</div>';
+    } else if (s.type === 'ring') {
+      var rk = s.kind === 'bad' ? 'bad' : 'good';
+      html += '<div class="ringwrap"><svg class="ring ' + rk + '" viewBox="0 0 100 100">' +
+        '<circle class="ring-track" cx="50" cy="50" r="42"></circle>' +
+        '<circle class="ring-fill" cx="50" cy="50" r="42" data-val="' + (s.value || 0) + '"></circle>' +
+        '</svg><div class="ring-pct">0%</div></div>';
+      if (s.label) html += '<div class="statlabel">' + s.label + '</div>';
+    } else if (s.type === 'ranked') {
+      html += '<div class="ranked">' + (s.bars || []).map(function (b) {
+        return '<div class="rankrow"><div class="ranktop"><span class="ranklabel">' + (b.label || '') + '</span>' +
+          (b.display ? '<span class="rankval">' + b.display + '</span>' : '') + '</div>' +
+          '<div class="ranktrack"><div class="rankbar ' + (b.kind === 'bad' ? 'bad' : '') +
+          '" data-val="' + (b.value || 0) + '"></div></div></div>';
+      }).join('') + '</div>';
+    } else if (s.type === 'delta') {
+      var dk = s.kind === 'bad' ? 'bad' : 'good';
+      html += '<div class="delta">' +
+        '<div class="delta-cell"><div class="delta-val" data-val="' + (s.from || '') + '">' + (s.from || '') + '</div>' +
+        (s.from_label ? '<div class="delta-lab">' + s.from_label + '</div>' : '') + '</div>' +
+        '<div class="delta-arrow">&rarr;</div>' +
+        '<div class="delta-cell"><div class="delta-val ' + dk + '" data-val="' + (s.to || '') + '">' + (s.to || '') + '</div>' +
+        (s.to_label ? '<div class="delta-lab">' + s.to_label + '</div>' : '') + '</div></div>';
+      if (s.change) html += '<div class="delta-badge ' + dk + '">' + s.change + '</div>';
+    } else if (s.type === 'timeline') {
+      var evs = s.events || [];
+      html += '<div class="timeline"><div class="tl-track"><div class="tl-line"></div>' + evs.map(function (e, i) {
+        var left = evs.length > 1 ? (i / (evs.length - 1) * 100) : 50;
+        return '<div class="tl-event" style="left:' + left.toFixed(2) + '%"><div class="tl-dot"></div>' +
+          '<div class="tl-date">' + (e.date || '') + '</div><div class="tl-evlabel">' + (e.label || '') + '</div></div>';
+      }).join('') + '</div></div>';
+    } else if (s.type === 'waterfall') {
+      var wfStart = s.start || {}, wfEnd = s.end || {}, wfSteps = s.steps || [];
+      var run = Number(wfStart.value) || 0, maxTop = Math.max(0, run), wcols = [];
+      wcols.push({ label: wfStart.label || '', floor: 0, val: run, cls: 'tot' });
+      wfSteps.forEach(function (st) {
+        var v = Number(st.value) || 0, floor = v >= 0 ? run : run + v;
+        wcols.push({ label: st.label || '', floor: floor, val: Math.abs(v), cls: (st.kind === 'bad' || v < 0) ? 'bad' : 'good' });
+        run += v; if (run > maxTop) maxTop = run;
+      });
+      var endVal = (wfEnd.value === undefined || wfEnd.value === null) ? run : Number(wfEnd.value);
+      wcols.push({ label: wfEnd.label || '', floor: 0, val: endVal, cls: 'tot' });
+      if (endVal > maxTop) maxTop = endVal;
+      el.dataset.wfmax = String(maxTop || 1);
+      html += '<div class="waterfall">' + wcols.map(function (c) {
+        return '<div class="wf-col"><div class="wf-barwrap"><div class="wf-bar ' + c.cls +
+          '" data-floor="' + c.floor + '" data-val="' + c.val + '"></div></div>' +
+          '<div class="wf-label">' + c.label + '</div></div>';
+      }).join('') + '</div>';
+    } else if (s.type === 'matrix') {
+      var xa = s.x_axis || ['', ''], ya = s.y_axis || ['', ''];
+      html += '<div class="matrix"><div class="mx-plot"><div class="mx-axisx"></div><div class="mx-axisy"></div>' +
+        (s.points || []).map(function (p) {
+          return '<div class="mx-pt ' + (p.kind === 'bad' ? 'bad' : 'good') + '" style="left:' +
+            (Number(p.x) * 100).toFixed(1) + '%;bottom:' + (Number(p.y) * 100).toFixed(1) + '%">' +
+            '<span class="mx-ptlab">' + (p.label || '') + '</span></div>';
+        }).join('') + '</div>' +
+        '<div class="mx-xlo">' + (xa[0] || '') + '</div><div class="mx-xhi">' + (xa[1] || '') + '</div>' +
+        '<div class="mx-ylo">' + (ya[0] || '') + '</div><div class="mx-yhi">' + (ya[1] || '') + '</div></div>';
+    } else if (s.type === 'reframe') {
+      var rtot = ((s.before || '') + (s.strike || '') + (s.after || '')).length;
+      html += '<div class="reframe headline sm' + (rtot > 38 ? ' xs' : '') + '">' +
+        '<span class="rf-before">' + (s.before || '') + ' </span>' +
+        '<span class="rf-strike"><span class="rf-line"></span>' + (s.strike || '') + '</span>' +
+        '<span class="rf-arrow"> &rarr; </span>' +
+        '<span class="rf-after accent">' + (s.after || '') + '</span></div>';
+    } else if (s.type === 'highlight') {
+      var mset = {};
+      (s.mark || []).forEach(function (w) { mset[w.toLowerCase().replace(/[^a-z0-9']/g, '')] = 1; });
+      var hcls = (s.headline && s.headline.length > 60) ? 'headline sm' : 'headline';
+      html += '<div class="' + hcls + '">' + (s.headline || '').split(/(\s+)/).map(function (tok) {
+        if (mset[tok.toLowerCase().replace(/[^a-z0-9']/g, '')]) return '<span class="hl"><span class="hl-bg"></span>' + tok + '</span>';
+        return tok;
+      }).join('') + '</div>';
+    } else if (s.type === 'build') {
+      var bacc = {}, bacc2 = {};
+      (s.accent || []).forEach(function (w) { bacc[w.toLowerCase().replace(/[^a-z0-9']/g, '')] = 1; });
+      (s.accent2 || []).forEach(function (w) { bacc2[w.toLowerCase().replace(/[^a-z0-9']/g, '')] = 1; });
+      var bcls = (s.headline && s.headline.length > 60) ? 'headline sm' : 'headline';
+      html += '<div class="' + bcls + ' buildline">' + (s.headline || '').split(/\s+/).filter(Boolean).map(function (w) {
+        var k = w.toLowerCase().replace(/[^a-z0-9']/g, '');
+        return '<span class="bw' + (bacc[k] ? ' accent' : (bacc2[k] ? ' accent2' : '')) + '">' + w + '</span>';
+      }).join(' ') + '</div>';
+    } else if (s.type === 'punch') {
+      var pcls = s.kind === 'bad' ? ' accent2' : (s.kind === 'good' ? ' accent' : '');
+      var pword = s.word || s.headline || '';
+      var psz = pword.length <= 5 ? '' : (pword.length <= 8 ? ' md' : ' sm');  // shrink so long words don't clip
+      html += '<div class="punch' + psz + pcls + '">' + pword + '</div>';
+    } else if (s.type === 'list') {
+      html += '<div class="list">' + (s.items || []).map(function (it, i) {
+        return '<div class="li-row"><span class="li-num">' + (i + 1) + '</span><span class="li-text">' + it + '</span></div>';
+      }).join('') + '</div>';
+    } else if (s.type === 'define') {
+      var dtcls = (s.term || '').length > 16 ? ' sm' : '';  // long terms drop a size
+      html += '<div class="define"><div class="def-term' + dtcls + '">' + (s.term || '') + '</div>' +
+        '<div class="def-body">' + (s.definition || '') + '</div></div>';
     } else if (s.type === 'quote') {
       html += '<div class="quoteblock"><div class="quotemark">“</div><div class="quotetext">' +
         (s.quote || s.headline || '') + '</div>' +
@@ -139,11 +251,52 @@
   Array.prototype.forEach.call(stage.children, function (el) { slideEls[el.dataset.id] = el; });
   var DECK_MOTION = DECK.motion || 'rise';
   var styleById = {}, typeById = {};
-  DECK.slides.forEach(function (s) { styleById[s.id] = s.transition || DECK_MOTION; typeById[s.id] = s.type; });
+  DECK.slides.forEach(function (s) {
+    styleById[s.id] = s.transition || (s.type === 'punch' ? 'pop' : DECK_MOTION); typeById[s.id] = s.type;
+  });
   // reserve the bottom caption zone so centered content never collides with captions
   // (critical for short aspects like 1:1 / 16:9 which have far less vertical room than 9:16)
   var _reserve = Math.round(window.innerHeight * ((DECK.safe_bottom || 0.14) + 0.12));
   Array.prototype.forEach.call(stage.children, function (el) { el.style.paddingBottom = _reserve + 'px'; });
+
+  // Aspect-aware fit for the dense devices (waterfall columns, matrix labels): scale geometry
+  // to the actual viewport + element count so any count reads on any aspect. Computed once —
+  // the renderer fixes the viewport before load, so window dims are final here. We scale to fit,
+  // never drop data: silently truncating a waterfall would break its running total (PRD §8.6).
+  (function fitDenseDevices() {
+    var vw = window.innerWidth, vh = window.innerHeight, avail = Math.max(200, vw - 180);  // 90px slide pad each side
+    Array.prototype.forEach.call(stage.querySelectorAll('.waterfall'), function (wf) {
+      var cols = wf.querySelectorAll('.wf-col'), n = cols.length; if (!n) return;
+      var gap = Math.max(12, Math.min(26, avail * 0.03));
+      var colW = Math.max(40, Math.min(150, (avail - (n - 1) * gap) / n));
+      // size labels to the LONGEST word (labels wrap on spaces, so a single long word is the
+      // binding constraint) so dense charts don't let neighbouring labels collide.
+      var lw = 1;
+      Array.prototype.forEach.call(cols, function (c) {
+        var lb = c.querySelector('.wf-label');
+        if (lb) (lb.textContent || '').split(/\s+/).forEach(function (w) { lw = Math.max(lw, w.length); });
+      });
+      // bias toward larger labels for mobile legibility (a touch of overlap is fine — motion graphics)
+      var labFs = Math.max(20, Math.min(38, Math.min(colW * 0.40, colW / (lw * 0.52))));
+      wf.style.gap = gap.toFixed(1) + 'px';
+      Array.prototype.forEach.call(cols, function (c) {
+        var bw = c.querySelector('.wf-barwrap'); if (bw) bw.style.width = colW.toFixed(1) + 'px';
+        var lb = c.querySelector('.wf-label');
+        if (lb) { lb.style.fontSize = labFs.toFixed(1) + 'px'; lb.style.maxWidth = (colW + 14).toFixed(1) + 'px'; }
+      });
+    });
+    Array.prototype.forEach.call(stage.querySelectorAll('.matrix'), function (mx) {
+      var plotW = mx.getBoundingClientRect().width || Math.min(vh * 0.58, avail * 0.78);
+      var fs = Math.max(24, Math.min(40, plotW * 0.062));  // larger for mobile legibility
+      Array.prototype.forEach.call(mx.querySelectorAll('.mx-ptlab'), function (lb) {
+        lb.style.fontSize = fs.toFixed(1) + 'px'; lb.style.whiteSpace = 'normal';
+        lb.style.maxWidth = (plotW * 0.42).toFixed(0) + 'px'; lb.style.textAlign = 'center';
+      });
+      Array.prototype.forEach.call(mx.querySelectorAll('.mx-xlo, .mx-xhi, .mx-ylo, .mx-yhi'), function (lb) {
+        lb.style.fontSize = fs.toFixed(1) + 'px';
+      });
+    });
+  })();
 
   window.renderAt = function (t) {
     var tl = window.TIMELINE; if (!tl) return;
@@ -191,6 +344,108 @@
           st.style.opacity = Math.max(0, sg);
           st.style.transform = 'translateX(' + ((1 - Math.max(0, sg)) * -28).toFixed(1) + 'px)';
         });
+      } else if (rt === 'pictograph') {
+        var pcg = easeOut((t - win.start) / Math.min(1.0, span));
+        var onCells = el.querySelectorAll('.picto-cell.on');
+        var lit = Math.round(pcg * onCells.length);
+        Array.prototype.forEach.call(onCells, function (c, idx) { c.style.opacity = idx < lit ? 1 : 0.16; });
+      } else if (rt === 'trend') {
+        var tg = easeOut((t - win.start) / Math.min(1.3, span));
+        if (el.__pts === undefined) {  // parse + measure once — reading clientHeight per frame forces a reflow
+          var raw = JSON.parse(el.dataset.points || '[]').map(Number);
+          if (raw.length) {
+            var mn = Math.min.apply(null, raw), mx = Math.max.apply(null, raw), rng = (mx - mn) || 1;
+            el.__pts = raw.map(function (v, i) {
+              return { x: raw.length > 1 ? i / (raw.length - 1) * 100 : 50, y: 54 - ((v - mn) / rng) * 48 };
+            });
+          } else { el.__pts = []; }
+          el.__th = el.querySelector('.trend').clientHeight || window.innerHeight * 0.34;
+        }
+        var pts = el.__pts;
+        if (pts.length) {
+          var prog = tg * (pts.length - 1), fi = Math.floor(prog), fr = prog - fi;
+          var vis = pts.slice(0, fi + 1).map(function (p) { return p.x.toFixed(2) + ',' + p.y.toFixed(2); });
+          var lx = pts[Math.min(fi, pts.length - 1)].x, ly = pts[Math.min(fi, pts.length - 1)].y;
+          if (fi < pts.length - 1) {
+            lx = pts[fi].x + (pts[fi + 1].x - pts[fi].x) * fr; ly = pts[fi].y + (pts[fi + 1].y - pts[fi].y) * fr;
+            vis.push(lx.toFixed(2) + ',' + ly.toFixed(2));
+          }
+          var ln = el.querySelector('.trend-line'), dot = el.querySelector('.trend-dot'), te = el.querySelector('.trend-end');
+          if (ln) ln.setAttribute('points', vis.join(' '));
+          if (dot) {  // HTML overlay dot (the SVG viewBox is stretched, so an SVG circle would skew)
+            dot.style.left = lx.toFixed(2) + '%'; dot.style.top = (ly / 60 * el.__th).toFixed(1) + 'px';
+          }
+          if (te) te.style.opacity = Math.max(0, Math.min(1, (tg - 0.85) / 0.15));
+        }
+      } else if (rt === 'ring') {
+        var rg = easeOut((t - win.start) / Math.min(1.3, span));
+        var rfill = el.querySelector('.ring-fill'), rpe = el.querySelector('.ring-pct');
+        var rv = parseFloat(rfill.dataset.val); rv = rv > 1 ? rv / 100 : rv;
+        var RC = 2 * Math.PI * 42;
+        rfill.style.strokeDasharray = RC.toFixed(2);
+        rfill.style.strokeDashoffset = (RC * (1 - rg * rv)).toFixed(2);
+        if (rpe) rpe.textContent = Math.round(rg * rv * 100) + '%';
+      } else if (rt === 'ranked') {
+        Array.prototype.forEach.call(el.querySelectorAll('.rankrow'), function (row, idx) {
+          var rkg = easeOut((t - win.start - idx * 0.12) / Math.min(0.9, span));
+          row.style.opacity = Math.max(0, Math.min(1, rkg * 3));
+          var rb = row.querySelector('.rankbar');
+          rb.style.width = (Math.max(0, rkg) * parseFloat(rb.dataset.val) * 100) + '%';
+        });
+      } else if (rt === 'delta') {
+        var dg = easeOut((t - win.start) / Math.min(1.0, span));
+        var dvals = el.querySelectorAll('.delta-val');
+        if (dvals[0]) countUp(dvals[0], dg);
+        if (dvals[1]) countUp(dvals[1], easeOut((t - win.start - 0.12) / Math.min(1.0, span)));
+        var badge = el.querySelector('.delta-badge');
+        if (badge) badge.style.opacity = Math.max(0, Math.min(1, (dg - 0.6) / 0.4));
+      } else if (rt === 'timeline') {
+        var tlg = easeOut((t - win.start) / Math.min(1.2, span));
+        var tline = el.querySelector('.tl-line'); if (tline) tline.style.width = (tlg * 100) + '%';
+        Array.prototype.forEach.call(el.querySelectorAll('.tl-event'), function (ev, idx) {
+          var eg = Math.max(0, easeOut((t - win.start - 0.12 - idx * 0.18) / Math.min(0.6, span)));
+          ev.style.opacity = eg;
+          var d = ev.querySelector('.tl-dot'); if (d) d.style.transform = 'scale(' + (0.3 + 0.7 * eg) + ')';
+        });
+      } else if (rt === 'waterfall') {
+        var barMaxW = window.innerHeight * 0.26, wmax = parseFloat(el.dataset.wfmax) || 1, wscale = barMaxW / wmax;
+        Array.prototype.forEach.call(el.querySelectorAll('.wf-bar'), function (bar, idx) {
+          var wg = Math.max(0, easeOut((t - win.start - idx * 0.13) / Math.min(0.7, span)));
+          bar.style.bottom = (parseFloat(bar.dataset.floor) * wscale) + 'px';
+          bar.style.height = (wg * parseFloat(bar.dataset.val) * wscale) + 'px';
+        });
+      } else if (rt === 'matrix') {
+        Array.prototype.forEach.call(el.querySelectorAll('.mx-pt'), function (pt, idx) {
+          var mg = Math.max(0, easeOut((t - win.start - 0.15 - idx * 0.14) / Math.min(0.6, span)));
+          pt.style.opacity = mg;
+          pt.style.transform = 'translate(-50%, 50%) scale(' + (0.2 + 0.8 * mg) + ')';
+        });
+      } else if (rt === 'reframe') {
+        var fg = easeOut((t - win.start) / Math.min(1.4, span));
+        var rl = el.querySelector('.rf-line'); if (rl) rl.style.width = (Math.min(1, fg / 0.45) * 100) + '%';
+        var af = el.querySelector('.rf-after'), ra = el.querySelector('.rf-arrow');
+        var ao = Math.max(0, Math.min(1, (fg - 0.45) / 0.45));
+        if (af) { af.style.opacity = ao; af.style.transform = 'translateY(' + ((1 - ao) * 14).toFixed(1) + 'px)'; }
+        if (ra) ra.style.opacity = ao;
+      } else if (rt === 'highlight') {
+        var hg = Math.max(0, easeOut((t - win.start - 0.3) / Math.min(0.8, span)));
+        Array.prototype.forEach.call(el.querySelectorAll('.hl-bg'), function (bg) { bg.style.width = (hg * 100) + '%'; });
+      } else if (rt === 'build') {
+        Array.prototype.forEach.call(el.querySelectorAll('.bw'), function (w, idx) {
+          var bg = Math.max(0, easeOut((t - win.start - idx * 0.07) / Math.min(0.5, span)));
+          w.style.opacity = bg;
+          w.style.transform = 'translateY(' + ((1 - bg) * 18).toFixed(1) + 'px) scale(' + (0.85 + 0.15 * bg) + ')';
+        });
+      } else if (rt === 'list') {
+        Array.prototype.forEach.call(el.querySelectorAll('.li-row'), function (row, idx) {
+          var lg = Math.max(0, easeOut((t - win.start - idx * 0.14) / Math.min(0.6, span)));
+          row.style.opacity = lg;
+          row.style.transform = 'translateX(' + ((1 - lg) * -24).toFixed(1) + 'px)';
+        });
+      } else if (rt === 'define') {
+        var deg = Math.max(0, easeOut((t - win.start - 0.3) / Math.min(0.6, span)));
+        var body = el.querySelector('.def-body');
+        if (body) { body.style.opacity = deg; body.style.transform = 'translateY(' + ((1 - deg) * 16).toFixed(1) + 'px)'; }
       }
     });
 

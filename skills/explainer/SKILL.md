@@ -91,8 +91,10 @@ want read a certain way (e.g. "ninety seven million").
 
 `deck.json` — one slide per id. **Pick the device that proves each point** — the full
 catalog (schemas + when-to-use) is **[docs/visual-devices.md](../../docs/visual-devices.md)**.
-Devices: narrative (`hook` · `statement` · `payoff` · `quote`), data (`stat` · `statgrid` ·
-`progress` · `diagram` · `compare` · `steps`), source (`figure`), brand (`cta`, auto).
+Devices: narrative (`hook` · `statement` · `build` · `reframe` · `highlight` · `punch` ·
+`define` · `list` · `payoff` · `quote`), data (`stat` · `ring` · `statgrid` · `progress` ·
+`pictograph` · `trend` · `delta` · `diagram` · `ranked` · `compare` · `timeline` ·
+`waterfall` · `matrix` · `steps`), source (`figure`), brand (`cta`, auto).
 ```json
 { "title": "<deck title>", "slides": [
   { "id": "s1", "type": "hook", "kicker": "<label>", "headline": "<text>", "accent": ["word"] },
@@ -109,14 +111,37 @@ Devices: narrative (`hook` · `statement` · `payoff` · `quote`), data (`stat` 
   { "id": "s10", "type": "payoff", "headline": "<text>", "accent": ["word"], "subkicker": "<a · b · c>" }
 ] }
 ```
-`stat`/`statgrid` count their numbers up; `progress`/`diagram` bars grow; `steps`/`statgrid`
-reveal in sequence — all driven deterministically by `renderAt(t)`. `figure` frames an
-ingested screenshot (white card); `image` is relative to the project root.
+More devices (same `slides` array — see **[docs/visual-devices.md](../../docs/visual-devices.md)**
+for when-to-use + every field):
+```json
+  { "id": "n1", "type": "build", "headline": "<text>", "accent2": ["word"] },
+  { "id": "n2", "type": "reframe", "before": "It's not about", "strike": "luck", "after": "timing" },
+  { "id": "n3", "type": "highlight", "headline": "<text>", "mark": ["key", "phrase"] },
+  { "id": "n4", "type": "punch", "word": "Ship.", "kind": "good" },
+  { "id": "n5", "type": "define", "term": "<term>", "definition": "<gloss>" },
+  { "id": "n6", "type": "list", "kicker": "3 truths", "items": ["<a>", "<b>", "<c>"] },
+  { "id": "d1", "type": "ring", "value": "73%", "label": "<context>", "kind": "bad" },
+  { "id": "d2", "type": "pictograph", "filled": 9, "total": 10, "label": "<context>", "kind": "bad" },
+  { "id": "d3", "type": "trend", "kicker": "MRR", "points": [2,3,5,8,13], "end_label": "$13k", "kind": "good" },
+  { "id": "d4", "type": "delta", "from": "$10k", "to": "$40k", "change": "+300%", "kind": "good" },
+  { "id": "d5", "type": "ranked", "bars": [ { "label": "<a>", "value": 0.9, "display": "90%", "kind": "bad" } ] },
+  { "id": "d6", "type": "timeline", "events": [ { "date": "Jan", "label": "<a>" }, { "date": "Sep", "label": "<b>" } ] },
+  { "id": "d7", "type": "waterfall", "start": { "label": "Q1", "value": 40 },
+    "steps": [ { "label": "Churn", "value": -12, "kind": "bad" } ], "end": { "label": "Q2", "value": 58 } },
+  { "id": "d8", "type": "matrix", "x_axis": ["Low effort","High effort"], "y_axis": ["Low impact","High impact"],
+    "points": [ { "label": "Ship", "x": 0.2, "y": 0.85, "kind": "good" } ] }
+```
+`stat`/`statgrid`/`delta` count their numbers up; `progress`/`diagram`/`ranked` bars grow;
+`ring`/`trend` arcs + lines draw on; `steps`/`statgrid`/`list`/`timeline` reveal in sequence —
+all driven deterministically by `renderAt(t)`. `figure` frames an ingested screenshot (white
+card); `image` is relative to the project root. **`waterfall`/`matrix` need ≥ 5s dwell** — the
+engine auto-fits their columns/labels to the aspect, but they carry the most to parse, so favor
+≤ 4 steps/points with short labels (see the doc).
 
-**Vary your devices (anti-monotony).** Across a deck use **4+ distinct device types**, and
-**never repeat the same data device** (`diagram`/`stat`/`progress`) unless the data demands
-it — a deck that reuses one bar chart reads as templated. Use `quote` for verbatim
-talk-time one-liners; use `stat` when a single number carries the point.
+**Vary your devices (anti-monotony).** Across a deck use **5+ distinct device types**, and
+**never repeat the same data device** unless the data demands it — a deck that reuses one bar
+chart reads as templated. Use `quote` for verbatim talk-time one-liners; use `stat` when a
+single number carries the point.
 
 Each slide may set `"transition"` (`rise` · `fade` · `pop` · `slide`) to override the
 theme's default intro motion. **Vary it** across slides — don't repeat the same transition

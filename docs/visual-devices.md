@@ -44,6 +44,52 @@ A pull-quote — **use verbatim quotes here** (e.g. talk-time `quotes.md` one-li
   "attribution": "Dave Saunders" }
 ```
 
+### `reframe`
+Strike the wrong word, swap in the right one. Best device for a myth→reality flip at the
+word level. A line draws across `strike`; `after` rises in. Keep all three parts short.
+```json
+{ "id": "s3", "type": "reframe", "kicker": "the flip",
+  "before": "It's not about", "strike": "luck", "after": "timing" }
+```
+
+### `highlight`
+A marker sweep wipes across the key phrase mid-dwell — emphasis without a layout change.
+`mark` lists the words to highlight (matched like `accent`). Keep the headline short.
+```json
+{ "id": "s4", "type": "highlight",
+  "headline": "Execution is the scarce commodity", "mark": ["scarce", "commodity"] }
+```
+
+### `build`
+A `statement` whose words assemble one at a time — kinetic energy on a plain assertion.
+`accent`/`accent2` color words as usual.
+```json
+{ "id": "s2", "type": "build",
+  "headline": "Your first version should embarrass you", "accent2": ["embarrass", "you"] }
+```
+
+### `punch`
+A single-word slam, maximum size — for a beat. One short `word`. Pops in by default.
+`kind` (`good`/`bad`) tints it accent/accent2; omit for plain.
+```json
+{ "id": "s7", "type": "punch", "word": "Ship.", "kind": "good" }
+```
+
+### `list`
+A plain numbered list, revealed one item per beat. Lighter than `steps` (no process
+semantic, no `text` sub-line) — use for "3 reasons / things / truths".
+```json
+{ "id": "s6", "type": "list", "kicker": "3 hard truths",
+  "items": ["No one is coming to save you", "Taste compounds", "Boring wins"] }
+```
+
+### `define`
+A term and its definition. The `term` lands big; the `definition` fades in under it.
+```json
+{ "id": "s4", "type": "define", "term": "Default alive",
+  "definition": "Profitable on current trajectory, before raising more" }
+```
+
 ---
 
 ## Data devices
@@ -100,6 +146,83 @@ border (`good`/`bad`).
              { "title": "Cut what nobody uses" } ] }
 ```
 
+### `pictograph` — icon array (waffle)
+"N of M". A grid of cells, `filled` of `total` light up — concrete where a bare % is
+abstract. `kind` colors the filled cells (`good`/`bad`). Best with total ≤ 20.
+```json
+{ "id": "s2", "type": "pictograph", "kicker": "the odds",
+  "filled": 9, "total": 10, "label": "founders quit before they ship", "kind": "bad" }
+```
+
+### `trend` — a line that draws on
+Change over time. A sparkline draws left→right with a travelling end dot + `end_label`.
+`points` is a plain number array (raw values; auto-scaled). Use when the *shape* of the
+change is the point.
+```json
+{ "id": "s3", "type": "trend", "kicker": "MRR",
+  "points": [2, 3, 3, 5, 8, 13], "end_label": "$13k", "kind": "good" }
+```
+
+### `ring` — a proportion as an arc
+A single "X%" as a sweeping gauge with the % in the center — a more dynamic alternative to
+`progress`. `value` accepts `0.73`, `73`, or `"73%"`. (A gauge, not a pie comparison.)
+```json
+{ "id": "s4", "type": "ring", "kicker": "capacity",
+  "value": "73%", "label": "of runway already spent", "kind": "bad" }
+```
+
+### `ranked` — horizontal top-N bars
+3–5 ranked items with **long labels** (which vertical `diagram` can't hold). `value` is
+0–1 (bar length); optional `display` shows a value at the bar end; `kind` colors a bar.
+```json
+{ "id": "s4", "type": "ranked", "kicker": "where the week goes",
+  "bars": [ { "label": "Polishing in private", "value": 0.9, "display": "90%", "kind": "bad" },
+            { "label": "Talking to users", "value": 0.2, "display": "20%", "kind": "good" } ] }
+```
+
+### `delta` — before → after
+Two values joined by an arrow with a change badge — the quantitative cousin of `compare`.
+`from`/`to` count up; optional `from_label`/`to_label`; `change` is the badge; `kind` colors `to`.
+```json
+{ "id": "s5", "type": "delta", "kicker": "12 months",
+  "from": "$10k", "to": "$40k", "from_label": "Q1", "to_label": "Q4", "change": "+300%", "kind": "good" }
+```
+
+### `timeline` — dated milestones
+A horizontal axis with 3–5 **dated** points, revealed left→right as the connector draws.
+Distinct from `steps` (process, undated). Each event has a `date` + `label`.
+```json
+{ "id": "s6", "type": "timeline",
+  "events": [ { "date": "Jan", "label": "Idea" }, { "date": "Apr", "label": "MVP" },
+              { "date": "Sep", "label": "Revenue" } ] }
+```
+
+### `waterfall` — start → +/- contributors → end
+"How we closed the gap." A start total, floating +/- step bars, an end total. + steps are
+accent, − steps accent2; bars grow in sequence. The engine **auto-fits** the columns + label
+sizes to the viewport, so any count renders on any aspect without colliding — but it stays the
+**most dwell-sensitive** device: give it ≥ 5s. For readability still favor **≤ 4 steps** with
+short labels (6–7 bars fit, but go small on 9:16). `value`s are absolute numbers (steps may be
+negative).
+```json
+{ "id": "s5", "type": "waterfall", "kicker": "how we closed the gap",
+  "start": { "label": "Q1", "value": 40 },
+  "steps": [ { "label": "Churn", "value": -12, "kind": "bad" }, { "label": "New", "value": 30, "kind": "good" } ],
+  "end": { "label": "Q2", "value": 58 } }
+```
+
+### `matrix` — 2×2 positioning quadrant
+Two labeled axes, 2–4 plotted points. "Effort vs impact," "us vs them." **Dwell-sensitive:**
+give it ≥ 5s. The plot is square and the engine **auto-fits** the point labels (sizes + wraps
+them) to the viewport, so multi-word labels read on every aspect. Still keep to **≤ 4 points**
+so the quadrant doesn't crowd. `x`/`y` are 0–1; `kind` colors a point.
+```json
+{ "id": "s5", "type": "matrix", "kicker": "where to focus",
+  "x_axis": ["Low effort", "High effort"], "y_axis": ["Low impact", "High impact"],
+  "points": [ { "label": "Polish", "x": 0.8, "y": 0.2, "kind": "bad" },
+              { "label": "Ship", "x": 0.2, "y": 0.85, "kind": "good" } ] }
+```
+
 ---
 
 ## Source device
@@ -129,21 +252,42 @@ skill + `cta_library.json` for rotating variants.
 |---|---|
 | Open / hook | `hook` |
 | Assert one idea | `statement` |
+| Assert one idea, with energy | `build` |
+| Flip a myth to a reality | `reframe` |
+| Emphasize a key phrase | `highlight` |
+| Hit one hard beat | `punch` |
+| Define a term | `define` |
+| List a few points (no process) | `list` |
 | Land one big number | `stat` |
+| Land a proportion as an arc | `ring` |
 | Show a few related numbers | `statgrid` |
 | Show "X% of…" | `progress` |
+| Show "N of M" concretely | `pictograph` |
+| Show change over time | `trend` |
+| Show a before → after value | `delta` |
 | Compare a few quantities | `diagram` |
+| Rank a few items (long labels) | `ranked` |
 | Contrast two states/options | `compare` |
 | Walk through a process | `steps` |
+| Show dated milestones | `timeline` |
+| Show start → +/- → end | `waterfall` |
+| Position on two axes | `matrix` |
 | Quote someone verbatim | `quote` |
 | Show a real source figure | `figure` |
 | Close | `payoff` |
 
-**Anti-monotony:** across a 10–15 slide deck, aim to use **4+ distinct device types**. Never
-repeat the same data device (`diagram`/`stat`/`progress`) twice unless the data demands it.
+**Anti-monotony:** the palette is large on purpose — *vary the device to the message.* Across
+a 10–15 slide deck, aim to use **5+ distinct device types** and never repeat the same data
+device twice unless the data genuinely demands it. Reaching for the same bar chart (or the same
+text slide) twice reads as templated.
+
+**Dwell budget:** most devices read in a 2–5s dwell. `waterfall` and `matrix` carry the most to
+parse — the engine auto-fits their geometry to the aspect (no manual per-aspect tuning needed),
+but they still want **≥ 5s** and the readability guidance in their entries above.
 
 ## Roadmap (not yet implemented)
-- **waterfall** — A→B with contributing +/- factors ("how we close the gap"). Deferred: needs
-  >5s dwell to parse, marginal for short-form.
-- **2×2 matrix** — positioning quadrant. Deferred: same dwell-time concern.
-- Pie charts: **intentionally excluded** (hard to read on a phone; McKinsey banned them).
+- **section** — a chapter/act divider (big index + title) to break a long deck into parts.
+- **fill** — a fill-in-the-blank reveal ("the best time to ship was ▁▁▁" → answer drops in).
+- **checklist** — a do/don't tick-vs-cross variant (would likely be a `list` mode, not a new device).
+- Pie charts: **intentionally excluded** (hard to read on a phone; McKinsey banned them). Single-
+  series arcs are fine — see `ring`.

@@ -8,7 +8,8 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--fg);
 
 /* Display (serif) face — used only when a theme declares `fonts` (e.g. founder = Fraunces);
    otherwise --font-display is unset and these inherit the body font, i.e. unchanged. */
-.headline, .statnum, .progresspct, .quotetext, .cmpval, .steptitle { font-family: var(--font-display, inherit); }
+.headline, .statnum, .progresspct, .quotetext, .cmpval, .steptitle,
+.delta-val, .ring-pct, .trend-end, .def-term, .punch { font-family: var(--font-display, inherit); }
 
 /* ambient: a faint, slowly drifting glow so the frame is never fully static
    (continuous motion -> better perceived liveliness + no QA dead air). */
@@ -34,7 +35,7 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--fg);
 .barcol { display: flex; flex-direction: column; align-items: center; }
 .bar { width: 130px; background: var(--accent); border-radius: 18px 18px 0 0; height: 0; }
 .bar.bad { background: var(--accent2); }
-.barlabel { margin-top: 20px; font-size: 30px; opacity: .82; max-width: 200px; }
+.barlabel { margin-top: 20px; font-size: 36px; opacity: .82; max-width: 220px; }
 
 /* stat: one big count-up number that breathes (McKinsey "let the number breathe") */
 .statnum { font-size: 220px; font-weight: 900; line-height: 1; letter-spacing: -.02em; color: var(--accent); }
@@ -50,12 +51,12 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--fg);
 /* progress: a single proportion, big % + filling track */
 .progresspct { font-size: 150px; font-weight: 900; color: var(--accent); line-height: 1; }
 .progresstrack { margin-top: 44px; width: 78%; height: 46px; border-radius: 999px;
-  background: rgba(255,255,255,.12); overflow: hidden; }
+  background: var(--hair); overflow: hidden; }
 .progressfill { height: 100%; width: 0; border-radius: 999px; background: var(--accent); will-change: width; }
 
 /* compare: A vs B cards */
 .compare { display: flex; align-items: stretch; gap: 32px; margin-top: 24px; width: 90%; }
-.cmpcard { flex: 1; background: rgba(255,255,255,.05); border: 3px solid rgba(255,255,255,.10);
+.cmpcard { flex: 1; background: color-mix(in srgb, var(--fg) 6%, transparent); border: 3px solid var(--hair);
   border-radius: 28px; padding: 48px 32px; display: flex; flex-direction: column; justify-content: center; }
 .cmpcard.good { border-color: var(--accent); }
 .cmpcard.bad { border-color: var(--accent2); }
@@ -103,3 +104,147 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--fg);
 #caption .w { font-weight: 800; color: var(--fg); text-shadow: 0 4px 18px rgba(0,0,0,.55);
   will-change: transform, color; }
 #caption .w.active { color: var(--accent); }
+
+/* ============================================================
+   Expanded device set (Phase 2). No CSS animation/transition on
+   captured elements — every motion below is driven by renderAt(t).
+   ============================================================ */
+
+/* Theme-aware neutral hairlines/tracks: derived from --fg so they invert with the background
+   (a hardcoded rgba(255,255,255,…) track is invisible on the light themes — paper/medtech). */
+:root { --hair: color-mix(in srgb, var(--fg) 15%, transparent);
+        --hair-strong: color-mix(in srgb, var(--fg) 30%, transparent); }
+
+/* pictograph: icon/dot array (waffle) — N-of-M cells light up */
+.pictograph { display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px;
+  width: 58%; margin: 16px auto 0; }
+.picto-cell { width: 100%; aspect-ratio: 1 / 1; border-radius: 24%;
+  background: var(--hair); will-change: opacity; }
+.picto-cell.on.good { background: var(--accent); }
+.picto-cell.on.bad { background: var(--accent2); }
+
+/* trend: a single sparkline that draws on, with a travelling end dot + value */
+.trendwrap { position: relative; width: 78%; margin: 36px auto 0; }
+.trend { width: 100%; height: 34vh; overflow: visible; display: block; }
+.trend-line { fill: none; stroke: var(--accent); stroke-width: 4;
+  stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.trend.bad .trend-line { stroke: var(--accent2); }
+.trend-dot { position: absolute; left: 0; top: 0; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent); transform: translate(-50%, -50%); will-change: left, top; }
+.trend.bad ~ .trend-dot { background: var(--accent2); }
+.trend-end { position: absolute; right: 0; top: -64px; font-size: 56px; font-weight: 900;
+  color: var(--accent); opacity: 0; }
+.trend.bad ~ .trend-end { color: var(--accent2); }
+
+/* ring: single proportion as a sweeping arc (a gauge, not a pie comparison) */
+.ringwrap { position: relative; width: 38vh; height: 38vh; max-width: 70%; margin: 8px auto 0; }
+.ring { width: 100%; height: 100%; transform: rotate(-90deg); transform-origin: 50% 50%; }
+.ring-track { fill: none; stroke: var(--hair); stroke-width: 9; }
+.ring-fill { fill: none; stroke: var(--accent); stroke-width: 9; stroke-linecap: round; will-change: stroke-dashoffset; }
+.ring.bad .ring-fill { stroke: var(--accent2); }
+.ring-pct { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 92px; font-weight: 900; color: var(--accent); }
+.ring.bad ~ .ring-pct { color: var(--accent2); }
+
+/* ranked: horizontal top-N bars (long labels OK), grow + reveal in order */
+.ranked { display: flex; flex-direction: column; gap: 30px; width: 84%; margin-top: 18px; }
+.rankrow { opacity: 0; will-change: opacity; }
+.ranktop { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; margin-bottom: 12px; }
+.ranklabel { font-size: 44px; font-weight: 700; text-align: left; line-height: 1.15; }
+.rankval { font-size: 40px; font-weight: 800; color: var(--accent); flex: none; }
+.ranktrack { height: 34px; border-radius: 999px; background: var(--hair); overflow: hidden; }
+.rankbar { height: 100%; width: 0; border-radius: 999px; background: var(--accent); will-change: width; }
+.rankbar.bad { background: var(--accent2); }
+
+/* delta: before -> after, both count up, change badge pops in last */
+.delta { display: flex; align-items: center; justify-content: center; gap: 44px; margin-top: 8px; }
+.delta-cell { display: flex; flex-direction: column; align-items: center; }
+.delta-val { font-size: 132px; font-weight: 900; line-height: 1; letter-spacing: -.02em; }
+.delta-val.good { color: var(--accent); }
+.delta-val.bad { color: var(--accent2); }
+.delta-lab { font-size: 40px; opacity: .82; margin-top: 18px; }
+.delta-arrow { font-size: 96px; font-weight: 700; opacity: .55; }
+.delta-badge { margin-top: 46px; font-size: 50px; font-weight: 900; padding: 12px 36px;
+  border-radius: 999px; opacity: 0; will-change: opacity; }
+.delta-badge.good { color: var(--accent); border: 3px solid var(--accent); }
+.delta-badge.bad { color: var(--accent2); border: 3px solid var(--accent2); }
+
+/* timeline: dated milestones on an axis, connector draws + dots reveal L->R */
+.timeline { width: 86%; margin-top: 36px; }
+.tl-track { position: relative; height: 4px; background: var(--hair); }
+.tl-line { position: absolute; left: 0; top: 0; height: 100%; width: 0; background: var(--accent); will-change: width; }
+.tl-event { position: absolute; top: 0; transform: translateX(-50%); opacity: 0;
+  display: flex; flex-direction: column; align-items: center; width: 200px; will-change: opacity; }
+.tl-dot { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); margin-top: -13px; }
+.tl-date { margin-top: 18px; font-size: 40px; font-weight: 800; color: var(--accent); }
+.tl-evlabel { margin-top: 6px; font-size: 36px; opacity: .82; line-height: 1.2; }
+
+/* waterfall: start -> +/- contributors -> end; floating bars grow in sequence */
+.waterfall { display: flex; align-items: flex-end; justify-content: center; gap: 24px;
+  height: 28vh; margin-top: 28px; }
+.wf-col { display: flex; flex-direction: column; align-items: center; }
+.wf-barwrap { position: relative; width: 92px; height: 26vh; }
+.wf-bar { position: absolute; left: 0; width: 100%; bottom: 0; height: 0; border-radius: 8px;
+  background: var(--accent); will-change: height; }
+.wf-bar.tot { background: var(--accent); }
+.wf-bar.good { background: var(--accent); opacity: .82; }
+.wf-bar.bad { background: var(--accent2); opacity: .9; }
+.wf-label { margin-top: 18px; font-size: 26px; opacity: .82; max-width: 116px; line-height: 1.2; }
+
+/* matrix: 2x2 positioning quadrant; points pop in at (x,y), staggered */
+.matrix { position: relative; width: 58vh; max-width: 78%; aspect-ratio: 1 / 1; margin: 16px auto 0; }
+.mx-plot { position: absolute; inset: 0; border-left: 3px solid var(--hair-strong);
+  border-bottom: 3px solid var(--hair-strong); }
+.mx-axisx { position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: var(--hair); }
+.mx-axisy { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: var(--hair); }
+.mx-pt { position: absolute; transform: translate(-50%, 50%); opacity: 0; will-change: opacity, transform;
+  display: flex; flex-direction: column; align-items: center; }
+.mx-pt::before { content: ''; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); }
+.mx-pt.bad::before { background: var(--accent2); }
+.mx-ptlab { font-size: 34px; margin-top: 8px; white-space: nowrap; font-weight: 700; }
+.mx-xlo { position: absolute; left: 0; bottom: -54px; font-size: 34px; opacity: .8; }
+.mx-xhi { position: absolute; right: 0; bottom: -54px; font-size: 34px; opacity: .8; }
+/* y-axis labels live in the gutter left of the plot — wrap + cap width + right-align so the
+   larger mobile font never clips off the screen edge on narrow aspects (9:16 / 4:5). */
+.mx-ylo { position: absolute; left: -18px; bottom: 0; transform: translateX(-100%); font-size: 34px; opacity: .8;
+  white-space: normal; max-width: 150px; text-align: right; line-height: 1.1; }
+.mx-yhi { position: absolute; left: -18px; top: 0; transform: translateX(-100%); font-size: 34px; opacity: .8;
+  white-space: normal; max-width: 150px; text-align: right; line-height: 1.1; }
+
+/* reframe: strike the wrong word, swap in the right one */
+.reframe { line-height: 1.18; }
+.rf-strike { position: relative; opacity: .58; }
+.rf-line { position: absolute; left: -.02em; top: 52%; height: 7px; width: 0; background: var(--accent2);
+  border-radius: 4px; will-change: width; }
+.rf-arrow { opacity: 0; }
+.rf-after { display: inline-block; opacity: 0; will-change: opacity, transform; }
+
+/* highlight: a marker sweep wipes across the key phrase */
+.hl { position: relative; display: inline; }
+/* marker pops (accent at .62) but stays translucent so the word reads over it AND before the
+   sweep arrives (the text is --fg the whole time, never hidden behind an opaque block). */
+.hl-bg { position: absolute; left: -.06em; right: auto; top: .02em; bottom: .0em; width: 0;
+  background: var(--accent); opacity: .62; border-radius: 6px; z-index: -1; will-change: width; }
+
+/* build: headline assembles word-by-word */
+.buildline .bw { display: inline-block; opacity: 0; will-change: opacity, transform; }
+
+/* punch: a single-word slam (size tiers by word length so long words don't clip) */
+.punch { font-size: 260px; font-weight: 900; line-height: .92; letter-spacing: -.02em; }
+.punch.md { font-size: 196px; }
+.punch.sm { font-size: 150px; }
+.punch.accent { color: var(--accent); }
+.punch.accent2 { color: var(--accent2); }
+.reframe.xs { font-size: 58px; }
+
+/* list: a plain numbered list, revealed one per beat (lighter than steps) */
+.list { display: flex; flex-direction: column; gap: 30px; width: 82%; margin-top: 14px; text-align: left; }
+.li-row { display: flex; align-items: baseline; gap: 28px; opacity: 0; will-change: opacity, transform; }
+.li-num { font-size: 52px; font-weight: 900; color: var(--accent); flex: none; min-width: 60px; }
+.li-text { font-size: 54px; font-weight: 700; line-height: 1.15; }
+
+/* define: a term and its definition */
+.define { max-width: 88%; }
+.def-term { font-size: 112px; font-weight: 900; color: var(--accent); line-height: 1.04; }
+.def-term.sm { font-size: 78px; }
+.def-body { font-size: 48px; line-height: 1.3; opacity: 0; margin-top: 30px; will-change: opacity, transform; }
