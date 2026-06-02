@@ -17,9 +17,12 @@ def _music_path(proj):
 def _mux_one(proj, aspect, fps):
     label = aspect.replace(":", "x")
     out = proj.video_dir / f"explainer_{label}.mp4"
+    # render stage already encoded a video-only MP4 (streamed, low-RAM). Here we only
+    # add the audio track and copy the video through — no re-encode, tiny memory footprint.
+    vsrc = proj.work / f"video_{label}.mp4"
     music = _music_path(proj)
     cmd = ["ffmpeg", "-hide_banner", "-y",
-           "-framerate", str(fps), "-i", str(proj.frames_dir(label) / "f%05d.png"),
+           "-i", str(vsrc),
            "-i", str(proj.work / "narration.wav")]
     if music:
         gain = float(proj.data.get("music_gain", 0.16))  # low bed under narration
@@ -29,9 +32,8 @@ def _mux_one(proj, aspect, fps):
                 "-map", "0:v", "-map", "[a]"]
     else:
         cmd += ["-map", "0:v", "-map", "1:a"]
-    cmd += ["-c:v", "h264_videotoolbox", "-b:v", "8M", "-pix_fmt", "yuv420p",
-            "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709",
-            "-color_range", "tv", "-c:a", "aac_at", "-b:a", "192k", "-ar", "48000",
+    cmd += ["-c:v", "copy",
+            "-c:a", "aac_at", "-b:a", "192k", "-ar", "48000",
             "-movflags", "+faststart", "-shortest", str(out)]
     t0 = time.time()
     subprocess.run(cmd, check=True, capture_output=True)
