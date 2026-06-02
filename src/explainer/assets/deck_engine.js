@@ -454,9 +454,14 @@
       if (captionEl.dataset.sig !== 'cta') { captionEl.innerHTML = ''; captionEl.dataset.sig = 'cta'; }
       return;
     }
-    // kinetic captions for the active slide
+    // kinetic captions for the active slide.
+    // caption_mode "window" (default): TikTok-style — group words into small chunks (caption_window
+    //   words, breaking at sentence punctuation) and show ONLY the chunk containing the spoken word.
+    // caption_mode "full": legacy — show the whole slide's narration, highlight the spoken word.
     var words = tl.words.filter(function (w) { return w.slide === active.id; });
-    var sig = active.id + ':' + words.length;
+    var capMode = DECK.caption_mode || 'window';
+    var winN = DECK.caption_window || 4;
+    var sig = active.id + ':' + words.length + ':' + capMode + ':' + winN;
     if (captionEl.dataset.sig !== sig) {
       captionEl.dataset.sig = sig; captionEl.innerHTML = '';
       // size caption to viewport; place above the bottom safe area
@@ -464,19 +469,34 @@
       var safeBottom = DECK.safe_bottom || 0.14;            // platform safe-zone inset
       captionEl.style.bottom = Math.round(vh * safeBottom) + 'px';
       var fs = Math.round(Math.min(vw, vh) * 0.052);        // short-side => consistent across aspects
+      var chunk = 0, cnt = 0;
       words.forEach(function (w) {
         var sp = document.createElement('span'); sp.className = 'w'; sp.textContent = w.word;
-        sp.style.fontSize = fs + 'px'; captionEl.appendChild(sp);
+        sp.style.fontSize = fs + 'px';
+        sp.setAttribute('data-chunk', chunk);                // chunk membership for window mode
+        captionEl.appendChild(sp);
+        cnt++;
+        if (cnt >= winN || /[.!?]$/.test(w.word)) { chunk++; cnt = 0; }  // break on size or sentence end
       });
     }
     var spans = captionEl.children;
-    for (var i = 0; i < spans.length; i++) {
-      var w = words[i];
+    // active word index: exact time hit, else the most recent word that has started, else first.
+    var act = -1;
+    for (var i = 0; i < words.length; i++) { if (t >= words[i].start && t < words[i].end) { act = i; break; } }
+    if (act < 0) { for (var j = 0; j < words.length; j++) { if (t >= words[j].start) act = j; } }
+    if (act < 0) act = 0;
+    var activeChunk = spans[act] ? +spans[act].getAttribute('data-chunk') : 0;
+    for (var k = 0; k < spans.length; k++) {
+      var w = words[k];
       var on = w && t >= w.start && t < w.end;
-      spans[i].className = on ? 'w active' : 'w';
+      // window mode: hide every word outside the active chunk so only ~winN words show at once.
+      if (capMode === 'window') {
+        spans[k].style.display = (+spans[k].getAttribute('data-chunk') === activeChunk) ? '' : 'none';
+      }
+      spans[k].className = on ? 'w active' : 'w';
       // gentle emphasis: color (in CSS) + a small scale. Keep the scale modest so the
       // enlarged active word doesn't visually crowd its neighbours (scale doesn't reflow).
-      spans[i].style.transform = on ? 'scale(1.06)' : 'scale(1.0)';
+      spans[k].style.transform = on ? 'scale(1.06)' : 'scale(1.0)';
     }
   };
 

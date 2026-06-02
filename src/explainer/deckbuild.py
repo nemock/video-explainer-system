@@ -61,6 +61,10 @@ def run(proj):
     deck["motion"] = theme.get("motion", "rise")  # theme's default per-slide intro
     deck["safe_bottom"] = proj.safe_bottom         # platform safe-zone inset for captions
     deck["ambient"] = bool(proj.data.get("ambient", True))  # drifting glow (set false for ~2x faster render)
+    # caption style: "window" (default, TikTok-style — only ~caption_window words shown at a
+    # time) or "full" (legacy, whole-slide kinetic captions). Override per project via project.json.
+    deck["caption_mode"] = proj.data.get("caption_mode", "window")
+    deck["caption_window"] = int(proj.data.get("caption_window", 4))
 
     # branding: watermark on every slide + an auto-appended CTA end slide (assets are
     # project-relative, e.g. "brand/logo.png"; the deck lives one level down in deck/).
