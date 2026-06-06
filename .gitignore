@@ -38,3 +38,8 @@ BRG Logos/
 deep-dive/brand/
 deep-dive/shared/
 deep-dive/programs/
+
+# Byline brand/voice/editorial governance — PRIVATE IP (personal stories, strategy).
+# This repo is PUBLIC; these must never be committed here.
+brand-voice-notes/
+brand-voice/

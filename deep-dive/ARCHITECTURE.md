@@ -6,6 +6,8 @@
 **Lives in:** `/Volumes/Casima/claudeCode/explainer-system/deep-dive/` — a higher-level capability of the **explainer system**, built on the same engine (`/Users/davesaunders/myenv/bin/explainer`) as the short-form explainers.
 
 > **Where this lives / scope:** the deep-dive generator is a **capability of the explainer system**, **brand-parameterized**, not tied to any one show. Its **primary instance is the operator's own Founders Who Finish (FWF)** videos (and The Build); other content projects — e.g. CIRCUMVENT/CVG — *may* also consume it. Every brand specific below (FWF theme, channel, sponsors) is the **FWF brand config**, not an assumption baked into the system.
+>
+> **Private config & voice governance.** Concrete FWF instance values (Blotato account/channel IDs, sponsor specifics, theme tokens, music) and the byline voice/editorial library live **privately** at `~/.claude/explainer-brands/dave-byline/` — NOT in this public repo. See §8.0 and `deep-dive-instance-config.md` there.
 
 ---
 
@@ -33,7 +35,7 @@ This delivers the four properties the operator asked for:
 | # | Decision | Consequence |
 |---|---|---|
 | D1 | **Brand-parameterized; FWF is the primary instance** (not a CIRCUMVENT default) | Real FWF theme (purple/indigo/Montserrat), D-rocket + @davesaunders identity anchors (§17); brand config is swappable |
-| D1a | **YouTube = account `34001` (Dave Saunders) + a NEW dedicated deep-dive series playlist** | Not CIRCUMVENT 38684. **LinkedIn is dropped** for now (§13) |
+| D1a | **YouTube = the operator's personal channel + a NEW dedicated deep-dive series playlist** (account/playlist IDs in the private FWF config) | **LinkedIn dropped** for now (§13) |
 | D2 | **Sponsor reads + CTA are operator-voiced, recorded once** (not TTS) | Kills the human→synthetic seam; near-eliminates synthetic-media exposure; interstitials are `--voice-source operator`, version-pinned (§7) |
 | D3 | **Promo = short native snippets (<2 min) on X + TikTok + Instagram + Threads** (Blotato), pointing back to YouTube | The 20-min film exceeds X's 2-min cap, so the snippet/repurposing module is **core, not deferred** — it is the promo engine (§14). YouTube-Shorts top-of-funnel remains a later add. |
 | D4 | **Knowledge library: `cb`-vs-bespoke spike before committing** | A short evaluation decides bespoke vs a `company-brain` vault (§10.5) |
@@ -203,6 +205,14 @@ URLs: book = `http://davesaunders.net/book` · The Build = `https://davesaunders
 
 The council's central editorial finding: the original design optimized production and ignored **retention** — the hardest part of 20-min video. v2 makes retention and editorial quality first-class.
 
+### 8.0 Voice & editorial governance (inherited from the byline library)
+The deep-dive is a **new format under Dave's byline**, so it inherits the existing byline governance rather than reinventing it. That library lives privately at `~/.claude/explainer-brands/dave-byline/`:
+- **`editorial_thesis.md` (Part I)** — the brand thesis, the anti-"startup theater" stance, the **6 audience archetypes** (these *are* the deep-dive's audience), and **4 named frameworks** (order-of-operations test, walk-away condition, the three numbers, foundational-hire signal) — reusable brand-level IP a deep-dive can build a teaching arc around. The deep-dive must write its **own Part II** (format application) inheriting Part I unchanged.
+- **`voice_brand.md` + a new deep-dive format voice file** — stance, opening cadence ("open in the action"), rhetorical moves. `talktime --tag fwf` surfaces the same takes; the deep-dive voice file inherits `voice_brand.md` (it does not duplicate it).
+- **`content_workbook.md` story bank** — Dave's verified real anecdotes (Toxic Investor, Boondoggle Trips, Bell Labs/Apple AirPort, etc.) are reusable scar/vulnerability material for act narration; the words-to-avoid list and 11-point arc inform script drafting.
+- **`research_sources.md`** — the curated source roster feeds **library-first research** (§8.1) and topic discovery.
+- **`humanizer` skill is prose ground-truth.** Every script bound for the voiceover runs through `humanizer`; for this **spoken** format, run humanizer on the script as written, then a separate **spoken-cadence pass** (never pre-shorten before humanizer, never skip it). This is a hard step in the script stage (§6/§8.2).
+
 ### 8.1 Research (library-first)
 0. **Library-first lookup** — before new research, query the knowledge library (§10) for existing sources/facts/assets and check `subjects/` for prior coverage (reuse, avoid repetition, surface rights-clean assets we already own).
 1. **Topic intake** — direct topic, or parse a content-planning document and propose candidates (cross-checked against `subjects/`).
@@ -315,7 +325,7 @@ Output: `master/deepdive_16x9.mp4` + captions + chapters + chosen packaging.
 
 The 20-min master publishes 16:9 to **YouTube only** (LinkedIn dropped, D1a — 20-min native video underperforms there; the operator opted out). Reuses the proven Blotato pattern, hardened for long-form.
 
-- **Channel (D1a):** Blotato account **`34001` (Dave Saunders)** — **not** CIRCUMVENT's 38684 — into a **new dedicated deep-dive series playlist** (created once; the existing "Founders Who Finish" playlist `PLBgVuwkH6v4FUDggQYFVFOq-EgqLeE8Ae` is short-content and stays separate).
+- **Channel (D1a):** the operator's personal YouTube channel (Blotato account ID in the private FWF instance config) — into a **new dedicated deep-dive series playlist**, created once and kept separate from any existing short-content playlist. (Not the unrelated CIRCUMVENT channel.)
 - **Hardened large-file upload:** a 20–30 min master is ~1.2–1.5 GB. Budget the master bitrate/size to a known ceiling (a CRF master encode of the concat result rather than copying through high-bitrate segments); request the presigned URL **immediately before** upload (minimize TTL burn); use `curl` with `--connect-timeout/--max-time` and resumable `-C -` where supported; **verify uploaded object size** via `get_post_status`/`source_status` before `create_post`. On retry-exhaustion, persist a **`ready-but-upload-failed`** state so a failed upload never forces a re-render.
 - **YouTube post:** title (chosen variant), description = **outcome-promise hook (keyword-first 2 lines) + chapters + sourced links (from wiki facts) + the live offer figures for the book/The Build + seeded pinned comment**; `playlistIds` = the new series playlist (+ subject-derived series later); thumbnail = the packaged asset.
 - **Synthetic-media disclosure:** now **per-program with documented rationale**. With operator-voiced acts *and* interstitials (D2), the only AI element is assisted graphics; **verify YouTube's 2026 threshold** — likely no realistic-synthetic-voice disclosure required — rather than hard-coding `true` and paying an unneeded discoverability tax. Disclose honestly if actually required.
@@ -326,7 +336,7 @@ The 20-min master publishes 16:9 to **YouTube only** (LinkedIn dropped, D1a — 
 
 ## 14. Promo via short native snippets (the distribution engine)
 
-The full 16:9 master is too long for the short-video feeds (X caps at ~2 min), so promotion runs on **short native snippets (<2 min)** cut from the deep-dive and posted **natively** — not as links — to **X, TikTok, Instagram, and Threads** via existing Blotato connectors (accounts: X `16563`, TikTok `42662`, Instagram `41992`, Threads `6021`), each driving back to the YouTube video. This is **core to V1**, not deferred — it's how the long-form gets discovered.
+The full 16:9 master is too long for the short-video feeds (X caps at ~2 min), so promotion runs on **short native snippets (<2 min)** cut from the deep-dive and posted **natively** — not as links — to **X, TikTok, Instagram, and Threads** via existing Blotato connectors (X, TikTok, Instagram, Threads — account IDs in the private FWF config), each driving back to the YouTube video. This is **core to V1**, not deferred — it's how the long-form gets discovered.
 
 ### 14.1 Snippet generation
 - From the master + per-segment captions + the arc node's tagged hook/stat/payoff beats, auto-propose **3–6 snippets** (each a self-contained 20–110s moment: the hook, a surprising stat, a "who this is for," a quotable payoff).
@@ -334,8 +344,8 @@ The full 16:9 master is too long for the short-video feeds (X caps at ~2 min), s
 - Snippets are derived assets of the program (`promo/snippets/`), each labeled with its source timecode and angle.
 
 ### 14.2 Multi-platform native posting (Blotato)
-- **X (`16563`):** native snippet video + hook copy; the **YouTube link goes in a self-reply** (Blotato self-reply is confirmed working in existing routines), optionally a 2–3 tweet takeaway thread ending in the link. Pin the anchor.
-- **TikTok (`42662`) / Instagram (`41992`, reel) / Threads (`6021`):** native snippet + caption; link in caption/first-comment/bio per platform norm.
+- **X:** native snippet video + hook copy; the **YouTube link goes in a self-reply** (Blotato self-reply is confirmed working in existing routines), optionally a 2–3 tweet takeaway thread ending in the link. Pin the anchor.
+- **TikTok / Instagram (reel) / Threads:** native snippet + caption; link in caption/first-comment/bio per platform norm.
 - **Cadence:** stagger snippets across the days after go-live (T+0 within ~3h, then +1d/+3d/+7d/+14d), each a different snippet/angle; ~10am–1pm ET. Optional chapter deep-link (`?t=`) where the platform allows.
 - All snippets point at the **real captured YouTube URL** (§13); never fabricated.
 
@@ -390,7 +400,7 @@ A single source of truth at `deep-dive/brand/` (`brand.json` + `brand.md`) read 
 | 7 | Library rot (dupes/stale/orphans) | Dedup-on-write (content hash for assets); `as_of` decay; `promote` command; maintenance pass; **`cb` spike** (§10) |
 | 8 | Weak retention / disjointed acts | Retention layer + throughline spine + whole-film review gate + editorial rubric (§8) |
 | 9 | Stale/wrong offer in immutable masters | **Offer-figure indirection** — evergreen baked copy, live figure in description (§7) |
-| **OQ** | **Remaining open questions** | **Content-planning-doc format/location** (operator still drafting); `cb` vs bespoke (Phase-1 spike); confirm exact Pixabay source URLs in `LICENSES.md`. *(Resolved: YouTube 34001 + new series playlist; LinkedIn dropped; FWF theme = adapt kit + McKinsey; X self-reply + Premium ✓; promo = native snippets X/TikTok/IG/Threads; book `davesaunders.net/book`; The Build `davesaunders.net/free-trial`, $14.95→$79/mo in description; music supplied + licensed; logo/book-cover paths known.)* |
+| **OQ** | **Remaining open questions** | **Content-planning-doc format/location** (operator still drafting); `cb` vs bespoke (Phase-1 spike); confirm exact Pixabay source URLs in `LICENSES.md`. *(Resolved: YouTube = operator's channel + new series playlist; LinkedIn dropped; FWF theme = adapt kit + McKinsey; X self-reply + Premium ✓; promo = native snippets X/TikTok/IG/Threads; book + The Build URLs + offer in description; music supplied + licensed; logo/book-cover paths known. Concrete IDs/specifics in the private FWF config.)* |
 
 ---
 
@@ -406,7 +416,7 @@ A single source of truth at `deep-dive/brand/` (`brand.json` + `brand.md`) read 
   6. ASSEMBLE     preflight conform → per-segment loudnorm/music → concat -c copy → ffprobe offsets
                   → captions + chapters + packaging → master-integrity validation (dry-run available)
   7. FILM REVIEW  operator watches master end-to-end (editorial rubric gate 2) → publishable
-  8. PUBLISH      Blotato: hardened upload → YouTube 34001 (+chapters / new series playlist / packaging)
+  8. PUBLISH      Blotato: hardened upload → operator's YouTube channel (+chapters / new series playlist / packaging)
                   capture real URL → publish-log.md   (LinkedIn dropped)
   9. PROMOTE      cut 3–6 short (<2min) 9:16 snippets → post natively to X / TikTok / Instagram / Threads
                   (Blotato), each → YouTube URL (X link via self-reply); staggered angles, pinned anchor
