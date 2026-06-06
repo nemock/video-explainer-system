@@ -38,7 +38,7 @@ This delivers the four properties the operator asked for:
 | D1a | **YouTube = the operator's personal channel + a NEW dedicated deep-dive series playlist** (account/playlist IDs in the private FWF config) | **LinkedIn dropped** for now (§13) |
 | D2 | **Sponsor reads + CTA are operator-voiced, recorded once** (not TTS) | Kills the human→synthetic seam; near-eliminates synthetic-media exposure; interstitials are `--voice-source operator`, version-pinned (§7) |
 | D3 | **Promo = short native snippets (<2 min) on X + TikTok + Instagram + Threads** (Blotato), pointing back to YouTube | The 20-min film exceeds X's 2-min cap, so the snippet/repurposing module is **core, not deferred** — it is the promo engine (§14). YouTube-Shorts top-of-funnel remains a later add. |
-| D4 | **Knowledge library: `cb`-vs-bespoke spike before committing** | A short evaluation decides bespoke vs a `company-brain` vault (§10.5) |
+| D4 | **Central library = the shared `make_money/brain` cb vault** (resolved) | One content brain across FWF / personal / deep-dives / MedTech Monday / Founder Tip Tuesday / carousels. Per-video `research/` staging promotes up via `cb intake`. Not the cb *code* repo, not client vaults (§10) |
 | D5 | **Deck/visual layer follows McKinsey-grade information-design**, adapted to FWF + motion | Action/"so-what" slide titles, one-message-per-slide, MECE structure, disciplined data-viz and visual hierarchy — rendered as dynamic animated FWF slides (§8.6, §17). Leverage the `mckinsey-presentations` skill's standards. |
 | D6 | **Sponsor interstitials = iPad face-to-camera video**, composited ~80% (PiP) on the FWF branded background | Dave's real face adds authenticity; still recorded once + version-pinned. ffmpeg compositing, no new tools (§12.7). CTA optionally face-cam too. |
 | D7 | **Adobe Stock** (operator subscription) is a licensed visual source — photo **and video** B-roll | The shot-list step proposes search prompts to review; downloaded assets enter the catalog with the Adobe Stock license + asset ID (§8.1, §9, §10.3). |
@@ -70,7 +70,7 @@ This delivers the four properties the operator asked for:
 - **Program orchestration & crash-safe state** (§5) — the `program-manifest.json` state machine: atomic writes, schema version, single-writer, intent-only, reconcile-against-disk.
 - **Three-act content planning + retention/editorial layer** (§8) — throughline spine, open-loop/payoff ledger, editorial rubric, act-balance.
 - **Operator-voiced interstitial library** (§7) — FWF sponsor, The Build sponsor, CTA — recorded once, version-pinned, integrity-checked.
-- **Knowledge library** (§10) — cross-program sources/facts/assets/subjects/arcs (backend TBD by §10.5 spike).
+- **Knowledge brain** (§10) — the shared `make_money/brain` cb vault; deep-dives promote into it and query from it (cross-format reuse).
 - **Audio & music layer** (§11) — sponsor-break music, optional act bed, per-segment ducking + loudness.
 - **Assembly / master render** (§12) — format-contract conform, concat, ffprobe-derived offsets, seam QA, master-integrity validation, packaging.
 - **Long-form publishing** (§13) — FWF channel, hardened large-file upload, chapters, end screens/cards/playlists.
@@ -107,17 +107,14 @@ The **cold open is mandatory** (§8.5): a 10–20s hook stating the payoff/stake
 
 ## 4. Directory & artifact layout
 
-**Repo-source vs operator-content split.** This dev repo (`explainer-system/`) by convention tracks **only source** — the design docs here, and later the orchestrator code. **Operator content stays out of git** (matching the repo's existing `.gitignore` for `wiki/`, `outputs/`, and brand assets, which "live in `~/.claude/explainer-brands/`"). So `brand/`, `wiki/`, `shared/` (interstitials + music), and `programs/` are operator-content: either gitignored in-place or rooted under an operator content dir (e.g. `~/.claude/explainer-brands/fwf/…`). The repo's `wiki/` ignore rule already catches `deep-dive/wiki/`. Paths below show the *logical* layout; only `ARCHITECTURE.md`/`PRD.md` (and future code) are committed.
+**Repo-source vs operator-content split.** This dev repo (`explainer-system/`) tracks **only source** — the design docs here, and later the orchestrator code. **Operator content stays out of git** (matching the repo's existing `.gitignore` for `wiki/`, `outputs/`, brand assets). So `brand/`, `shared/` (interstitials + music), and `programs/` are operator-content (gitignored in-place, or rooted in the operator brand dir). The **central knowledge brain is a separate cb vault** — `make_money/brain` (§10) — **not under `deep-dive/` at all**. Only `ARCHITECTURE.md`/`PRD.md` (and future code) are committed.
 
 ```
 deep-dive/
 ├── ARCHITECTURE.md  ·  PRD.md              # ← committed (source)
 │   ── everything below is operator-content, NOT committed ──
 ├── brand/                                  # FWF brand spec (§17): theme tokens, logo/D-rocket, fonts, handle/home, voice profile
-├── wiki/                                   # persistent knowledge library (backend TBD §10.5) — gitignored
-│   ├── INDEX.md  ·  wiki-manifest.json
-│   ├── sources/ · facts/ · subjects/ · arcs/ · entities/
-│   └── assets/ (catalog.json + files/)
+│   (no local wiki — the central knowledge brain is the shared cb vault make_money/brain, §10)
 ├── shared/
 │   ├── interstitials/                      # operator-voiced, version-pinned (§7)
 │   │   ├── fwf-sponsor/ · thebuild-sponsor/ · like-subscribe-cta/
@@ -129,7 +126,7 @@ deep-dive/
         ├── program-manifest.json.bak  ·  .history/   # backups + transition journal
         ├── build-log.jsonl                 # append-only observability (§16)
         ├── content-plan.md                 # throughline spine, open-loops, rubric, shot list (§8)
-        ├── research/                        # staging area; promoted into wiki on completion (§10.4)
+        ├── research/                        # staging area; durable nodes promoted to the central brain on completion (§10.3)
         ├── segments/  (cold-open/ act-1/ … each an explainer project; acts hold sub-segments)
         ├── promo/  (x-promos.json · clip_16x9.mp4 · [future] shorts/)
         ├── packaging/ (title-variants.md · thumbnail.png + concepts)
@@ -272,24 +269,31 @@ Three visual sources, blended: **branded graphics** (stat/compare/diagram/steps)
 
 ---
 
-## 10. Persistent knowledge library (cross-program)
+## 10. Central knowledge brain (shared, cross-format)
 
-A system-root library that **accumulates across every deep-dive**, so research and visuals compound. Where the program manifest is the state of *one* film, this is the long-term memory of the whole show.
+**Decision (D4 — resolved): the central library is the existing `make_money/brain` company-brain (cb) vault** (`/Volumes/Casima/claudeCode/make_money/brain/`) — not a bespoke store, not a new vault. It is the **shared content-generation brain** for *all* of Dave's content: Founders Who Finish, Dave personally, deep-dive videos, MedTech Monday, Founder Tip Tuesday, the daily carousel/short-form, and future formats. Deep-dives both **contribute to** and **draw from** it, so research compounds across every format.
 
-### 10.1 Node types
-`sources/` (url, accessed, credibility, topics, used_in) · `facts/` (body, source, confidence, **as_of**, topics, used_in) · `subjects/` (summary, programs, status, related) · `arcs/` (hook archetype, **open_loops[]/payoffs[]**, act_beats, payoff type, structure_tags) · `entities/` (recurring people/companies/products) · `competitor-video/` (D8: url, channel, title, views, published, transcript-summary, what-worked, topics) · `assets/` (§10.3).
+Explicitly **not** used: `company-brain-vault/` (the cb *code* project) and `AiM_Wiki/` or other client/company vaults (kept isolated — no personal/brand content bleeds in, no client content bleeds out).
 
-### 10.2 "AI-optimized"
-Typed markdown + frontmatter, `[[wikilinks]]`, a machine-readable `wiki-manifest.json` for staged retrieval (filter then read), a curated `INDEX.md`, **dedup on write**, provenance + `used_in[]` everywhere, and **freshness/decay** on volatile facts (prices, market sizes flag for re-verification).
+### 10.1 Mapping onto the cb schema (default profile — no custom types)
+The deep-dive's knowledge maps directly onto the vault's existing node types (`make_money/brain/_system/NODE-TYPES.md`):
+- **`source`** — researched material with synthesis: web pages/papers, and **YouTube competitor videos** (source_kind web-snapshot / skill-output: title, channel, views, transcript synthesis, "what worked"). Provenance anchor.
+- **`fact`** — verified atomic claims; confidence + `as_of` decay on volatile metrics (cb handles this).
+- **`concept`** — defined terms / mental models, incl. Dave's **named frameworks** (order-of-operations test, walk-away condition, the three numbers, foundational-hire signal).
+- **`pattern`** — observed regularities: **what makes a title/thumbnail/hook work** (from the §8.1.2b competitive scan) and reusable **narrative-arc shapes**.
+- **`persona`** — the **6 audience archetypes** from `editorial_thesis.md`.
+- **`playbook` / `question` / `hypothesis`** — procedures, open unknowns, bets.
+- **Produced pieces** (a published deep-dive, carousel, MedTech Monday, etc.) → a **`source`** node, source_kind `skill-output` + `producing_skill`, tagged by topic — so "what have we covered, from what angle?" is a query, and evergreen/derivative reuse is explicit.
+- **Assets** (screenshots, Adobe Stock photo/video, face-cam) → `_attachments/` + a `source` node carrying **license, attribution, rights_status, stock_asset_id** — the rights record travels with the asset; reuse is auditable against the subscription.
 
-### 10.3 Graphical-asset catalog
-`assets/catalog.json` per element: `{id, type (branded-graphic | web-screenshot | web-image | pdf-figure | adobe-stock-photo | adobe-stock-video | facecam-video), path, source_url, stock_asset_id, captured, attribution, license (e.g. "Adobe Stock — Standard", "editorial/attribution", "owned"), rights_status (approved|needs-review|rejected), topics, used_in[]}`. Enables "do we already have a rights-approved asset for X?" lookups and keeps license/attribution attached to the pixel forever. Adobe Stock entries store the **asset ID + license tier** so reuse across videos is auditable against the subscription terms. **Asset dedup is a content hash, not LLM judgment.**
+### 10.2 Tooling (cb — already in use here)
+`cb intake` / `atomize` (research → typed nodes), `cb query` (staged retrieval, auto-injected pillars, citations), `cb maintain` (repair, **confidence decay**, dedup, rebuild INDEX), `cb visualize` (graph viewer). This is exactly the dedup/decay/maintenance/query machinery we'd otherwise rebuild — we get it for free, battle-tested in your setup.
 
-### 10.4 Promotion (not dumping)
-Program `research/` is the staging area; the library is the curated store. On completion, a real **`promote`** step copies rights-clean nodes/assets up (with `used_in[]` back-refs, refusing duplicates), writes the **arc** node, and marks the **subject** published. Promotion is a command, not a manual habit, so it isn't skipped under time pressure.
+### 10.3 Per-video staging → promotion
+Each program keeps working research in `deep-dive/programs/<slug>/research/` (plain files — raw notes, this topic's competitor scan, downloaded stock/screenshots). On completion, a **promotion step** curates the *durable, reusable* material **up into `make_money/brain`** via `cb intake` (sourced facts, frameworks, rights-clean assets, the produced-piece source node, what-worked patterns). **Promote, not dump:** scratch and drafts stay in the program folder; only knowledge the *next* piece (any format) would reuse graduates to the brain.
 
-### 10.5 Backend decision — spike `cb` vs bespoke (D4)
-The operator already has **`company-brain`** tooling (`cb maintain` repair/decay/rebuild-index, `intake`, `atomize`, `query`, `visualize`) that ships exactly the dedup/decay/maintenance/graph-query/visual-viewer machinery this library needs. **Before building anything,** run a short spike comparing hosting the library in a `cb` vault vs. a bespoke markdown+JSON store, against the deep-dive's exact needs (asset catalog with rights, arc nodes, promotion). Strong prior toward `cb` to avoid reinventing maintenance tooling; decide in the build plan. *(All catalog JSONs inherit the atomic-write + `.bak` + schema_version discipline of §5; the JSON is a derived cache rebuildable from per-node frontmatter.)*
+### 10.4 Why this compounds (the payoff)
+One topic researched once feeds many outputs over time — a deep-dive, a re-angled deep-dive, a Founder-Tip-Tuesday short, a daily carousel, a newsletter beat. Because every format reads/writes the same brain, **evergreen research is reused and re-angled instead of re-done**, and "we already covered X — here's the angle, the assets, the sources" is a query, not a memory.
 
 ---
 
@@ -426,10 +430,10 @@ A single source of truth at `deep-dive/brand/` (`brand.json` + `brand.md`) read 
 | 4 | Manifest / catalog corruption | Atomic writes + `.bak` + journal + `schema_version`; single-writer; reconcile-against-disk (§5) |
 | 5 | Partial/truncated artifacts mistaken for good | Write `.partial` → validate (ffprobe duration/moov) → flip status atomically; re-validate on resume (§5, §6) |
 | 6 | Large-master upload failure | Size budget; just-in-time presigned URL; resumable PUT; verify size; resumable `ready-but-upload-failed` state (§13) |
-| 7 | Library rot (dupes/stale/orphans) | Dedup-on-write (content hash for assets); `as_of` decay; `promote` command; maintenance pass; **`cb` spike** (§10) |
+| 7 | Library rot (dupes/stale/orphans) | Handled by **`cb maintain`** (dedup, confidence decay, rebuild-index) on the shared `make_money/brain` vault; curated promotion (not dump); per-video scratch stays in the program folder (§10) |
 | 8 | Weak retention / disjointed acts | Retention layer + throughline spine + whole-film review gate + editorial rubric (§8) |
 | 9 | Stale/wrong offer in immutable masters | **Offer-figure indirection** — evergreen baked copy, live figure in description (§7) |
-| **OQ** | **Remaining open questions** | **Content-planning-doc format/location** (operator still drafting); `cb` vs bespoke (Phase-1 spike); confirm exact Pixabay source URLs in `LICENSES.md`. *(Resolved: YouTube = operator's channel + new series playlist; LinkedIn dropped; FWF theme = adapt kit + McKinsey; X self-reply + Premium ✓; promo = native snippets X/TikTok/IG/Threads; book + The Build URLs + offer in description; music supplied + licensed; logo/book-cover paths known. Concrete IDs/specifics in the private FWF config.)* |
+| **OQ** | **Remaining open questions** | **Content-planning-doc format/location** (operator still drafting); confirm exact Pixabay source URLs in `LICENSES.md`. *(Resolved: YouTube = operator's channel + new series playlist; LinkedIn dropped; FWF theme = adapt kit + McKinsey; X self-reply + Premium ✓; promo = native snippets X/TikTok/IG/Threads; book + The Build URLs + offer in description; music supplied + licensed; logo/book-cover paths known. Concrete IDs/specifics in the private FWF config.)* |
 
 ---
 

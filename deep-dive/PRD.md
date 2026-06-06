@@ -28,7 +28,7 @@ The product's job: take a topic (or inspire one from a content-planning document
 | D1a | **YouTube = the operator's personal channel + a new dedicated deep-dive series playlist** (account/playlist IDs in the private FWF config). **LinkedIn dropped.** |
 | D2 | **Sponsor reads + CTA are operator-voiced, recorded once** (not TTS) — reusable, version-pinned. |
 | D3 | **Promo = short native snippets (<2 min) on X + TikTok + Instagram + Threads** (Blotato), pointing to YouTube. Core to V1 (the film exceeds X's 2-min cap). Deep-dive itself stays 16:9 long-form. |
-| D4 | **Knowledge library backend: spike `company-brain` (cb) vs bespoke** before committing. |
+| D4 | **Central library = the shared `make_money/brain` cb vault** (resolved) — one content brain across FWF / personal / deep-dives / MedTech Monday / Founder Tip Tuesday / carousels. Per-video research promotes up via `cb intake`. |
 | D5 | **Deck/visual layer = McKinsey-grade information design**, adapted to FWF + motion (action titles, one-message slides, disciplined data-viz). Use the `mckinsey-presentations` skill's standards. |
 | D6 | **Sponsor interstitials = iPad face-to-camera video**, composited ~80% (PiP) on the FWF branded background; recorded once, version-pinned. ffmpeg compositing, no new tools. CTA optionally face-cam. |
 | D7 | **Adobe Stock** (operator subscription) — licensed photo + video B-roll; shot list proposes search prompts; catalog tracks asset ID + license. |
@@ -102,9 +102,9 @@ The product's job: take a topic (or inspire one from a content-planning document
 - FR-4b — **YouTube competitive scan (D8)**: find top-performing videos on the topic (WebSearch) and pull title/description/view-count/auto-transcript via `yt-dlp --skip-download`; analyze why they work; output a "what's working / gaps to beat" brief feeding angle, titles, and thumbnails. Store as `competitor-video` nodes.
 - FR-5 — Draft scripts in the operator's voice via `talktime` (per-program tag).
 - FR-6 — Produce a **visual shot list**: per beat, choose branded graphic, web asset, or **Adobe Stock** photo/video (D7) — each with source + attribution + rights status. For Adobe Stock, emit **suggested search prompts** (keywords + beat + photo/video) for the operator to review and download from their subscription.
-- FR-7 — Maintain the **persistent knowledge library** (sources, facts, assets, subjects, arcs) with dedup-on-write (content hash for assets), `used_in[]` provenance, freshness/`as_of` decay, manifest + INDEX for retrieval.
-- FR-8 — **Promote (not dump)**: a real `promote` step curates rights-clean material up on completion, writes the arc node, marks the subject published.
-- FR-9 — **Backend decided by spike** (D4): host in a `cb` vault or bespoke store.
+- FR-7 — Use the **shared `make_money/brain` cb vault** as the central knowledge brain (sources, facts, concepts/frameworks, patterns, the 6 personas, produced-piece source nodes, assets with license/rights). `cb maintain` handles dedup + confidence decay + index; `cb query` for retrieval.
+- FR-8 — **Promote (not dump)**: on completion, a step curates rights-clean durable material from the per-video `research/` staging **up into `make_money/brain`** via `cb intake` (incl. a produced-piece `source` node tagged by topic). Scratch stays in the program folder.
+- FR-9 — Deep-dive knowledge maps onto the vault's **default-profile node types** (no custom schema). The brain is **shared across all of Dave's content formats**, enabling evergreen/derivative reuse (one topic → many formats/angles).
 
 ### 6.3 Content plan, retention & editorial
 - FR-10 — Decompose into **3 acts by default** (configurable per-project; 3 fits the two sponsor seams). **Act-balance per-project, default narrative-weighted** (~15–20 / 55–60 / 20–25 — i.e. ~5 / ~13 / ~6 min on ~24 min); even thirds optional for infomercial cadence. **Total length is not a hard constraint** (20+ min typical). Warn only on extreme lopsidedness. (Acts ≠ the ~60–90s recording sub-segments, which are invisible to the viewer.)
@@ -208,13 +208,13 @@ Intake → library-first Research → 3-Act Plan + retention spine (rubric gate 
 1. **Content-planning document** — the operator is still drafting it; its format/location is the last real input before a first build. *(This is the natural next handoff.)*
 2. **Caption style** — confirm 1–2 line bottom default for long-form (will assume yes unless told otherwise).
 
-**Build tasks (not questions):** the `cb`-vs-bespoke library spike (D4); confirm exact Pixabay source URLs in `shared/music/LICENSES.md`.
+**Build tasks (not questions):** wire the deep-dive into the shared `make_money/brain` cb vault (D4 resolved); confirm exact Pixabay source URLs in `shared/music/LICENSES.md`.
 
 ---
 
 ## 11. Phasing (proposed, for when build is approved)
 - **Phase 0 (this deliverable):** Architecture + PRD (v2, post-council). ✅
-- **Phase 1:** Resolve remaining open questions; **`cb`-vs-bespoke spike**; build the **FWF theme + McKinsey-grade info-design slide system** + brand spec; record + register the three operator-voiced interstitials; establish the music layer + licenses.
+- **Phase 1:** Resolve remaining open questions; **wire into the shared `make_money/brain` cb vault** (intake/query/maintain); build the **FWF theme + McKinsey-grade info-design slide system** + brand spec; record + register the face-cam sponsor interstitials; establish the music layer + licenses.
 - **Phase 2:** Orchestrator + crash-safe manifest; sub-segment record→align(gate)→render→review loop; retention/editorial planning + rubric gates; assembly (format-contract conform + concat + ffprobe offsets + caption stitch + chapters + master-integrity); observability (`build-log`, `doctor`).
 - **Phase 3:** YouTube publishing (operator's channel, new series playlist, hardened upload, packaging, end screens/cards) **+ the snippet promo engine** (3–6 <2-min native clips → X/TikTok/IG/Threads via Blotato, pointing at the captured YouTube URL).
 - **Phase 4:** First real deep-dive end-to-end from the operator's content-planning document; refine from the run. *(Later: a dedicated YouTube Short top-of-funnel.)*
