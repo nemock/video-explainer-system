@@ -17,6 +17,14 @@ THEMES = {
     # `forest` theme above. Fraunces display + Inter body via the optional `fonts` field.
     "founder":  {"bg": "#1E3A2F", "fg": "#F0E8D2", "accent": "#C9A24A", "accent2": "#B5654A", "motion": "fade",
                  "fonts": {"display": "Fraunces", "body": "Inter"}},
+    # Founders Who Finish (deep-dive long-form): flat deep-purple bg + grain/vignette,
+    # white text, ONE indigo accent (accent2 == accent so no off-brand red ever leaks).
+    # Montserrat 800 Condensed in the kit -> bundled as Archivo variable (wght+wdth) which
+    # has a real width axis; the condensed cut + ALL-CAPS titles / sentence-case body live in
+    # the `[data-theme="fwf"]` block of deck.css. `ambient:false` kills the drifting accent
+    # glow (the kit forbids gradients except the vignette). Pair with the FFW brand.
+    "fwf":      {"bg": "#36185B", "fg": "#FFFFFF", "accent": "#757BBD", "accent2": "#757BBD", "motion": "fade",
+                 "ambient": False, "fonts": {"display": "Archivo", "body": "Archivo"}},
 }
 DEFAULT = "midnight"
 VALID_MOTION = {"rise", "fade", "pop", "slide"}

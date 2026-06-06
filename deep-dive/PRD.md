@@ -83,7 +83,7 @@ The product's job: take a topic (or inspire one from a content-planning document
 | Break | Placement | On-screen + spoken |
 |---|---|---|
 | **Founders Who Finish** | After Act I | Operator-voiced; book cover, one-line pitch, on-screen `davesaunders.net/book` |
-| **The Build** | After Act II | Operator-voiced; pitch + on-screen `davesaunders.net/free-trial`. **Offer ($14.95 to start, then $79/mo, plus $1,500+ in free bonuses) lives in the YouTube description, NOT the immutable baked asset** (evergreen spoken copy only) |
+| **The Build** | After Act II | Operator-voiced; pitch + on-screen `davesaunders.net/free-trial`. **Offer figures (price + bonuses; in the private FWF config) live in the YouTube description, NOT the immutable baked asset** (evergreen spoken copy only) |
 | **Like & Subscribe CTA** | End of Act III | Operator-voiced, simple |
 
 **Music (supplied + licensed, Pixabay):** sponsor-break audio logo = `breakzstudios-…-165192.mp3` (upbeat ukulele); optional act bed = `alex-morgan-downtempo-…-528322.mp3` or `alex-morgan-corporate-530945.mp3`. Registered in `shared/music/LICENSES.md`.
@@ -202,7 +202,7 @@ Intake → library-first Research → 3-Act Plan + retention spine (rubric gate 
 
 **Resolved this round:** YouTube = operator's channel + new series playlist · LinkedIn dropped · FWF theme = adapt the kit + McKinsey info-design · X self-reply confirmed, promo = native snippets on X/TikTok/IG/Threads · logo/book-cover asset paths known. *(Concrete IDs in the private FWF config.)*
 
-**Also resolved:** book URL `davesaunders.net/book` · The Build URL `davesaunders.net/free-trial` · The Build offer **$14.95 to start, then $79/mo, plus $1,500+ in free bonuses** (→ YouTube description, not baked) · music supplied + Pixabay-licensed (logo + two act beds) · **X Premium = yes** · sponsor interstitials = face-cam video (D6).
+**Also resolved:** book URL `davesaunders.net/book` · The Build URL `davesaunders.net/free-trial` · The Build offer **figures (price + bonuses; in the private FWF config)** → YouTube description, not baked · music supplied + Pixabay-licensed (logo + two act beds) · **X Premium = yes** · sponsor interstitials = face-cam video (D6).
 
 **Still needed:**
 1. **Content guide — PROVIDED** (in the byline library: `editorial_thesis.md` + `content_workbook.md` + `research_sources.md`). Deep-dive topic selection draws from the thesis archetypes, The Build's theme calendar, the named frameworks, the research roster, and the YouTube competitive scan. The deep-dive's own "Part II" (format application of the thesis) is a **build task**, not an input still owed. *(First topic already chosen: pitch deck.)*
