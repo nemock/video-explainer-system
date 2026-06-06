@@ -223,7 +223,7 @@ The deep-dive is a **new format under Dave's byline**, so it inherits the existi
 
 ### 8.1 Research (library-first)
 0. **Library-first lookup** — before new research, query the knowledge library (§10) for existing sources/facts/assets and check `subjects/` for prior coverage (reuse, avoid repetition, surface rights-clean assets we already own).
-1. **Topic intake** — direct topic, or parse a content-planning document and propose candidates (cross-checked against `subjects/`).
+1. **Topic intake** — direct topic, or read the **content guide** (byline `editorial_thesis.md` + The Build theme calendar + `research_sources.md`, in the byline library) and propose candidates, cross-checked against the brain's covered topics.
 2. **Research** — WebSearch/WebFetch; every claim becomes a sourced `wiki fact` (no unsourced claims). Reddit/LinkedIn/Substack MCP for audience/primary research. **Promote** reusable, rights-clean sources/facts/assets into the library (§10.4).
 2b. **YouTube competitive scan (D8)** — find the **top-performing videos on the topic** (WebSearch), then `yt-dlp --skip-download` to pull each one's **title, description, view count, and auto-transcript** (no video download). Analyze for *why they worked*: title/thumbnail patterns, hook structure, angle, what they cover vs skip, comment themes. Output = a short "what's working / gaps to beat" brief that informs the angle, the **transformative-outcome framing** (§8.2), and the **packaging** (§12.5). Captured as `competitor-video` nodes (§10.1) so the intel compounds across videos. *(Learn from winners; don't clone — differentiate on the operator's scar-tested, framework-driven angle.)*
 3. **Voice** — `talktime --tag fwf` (tag is a **per-program parameter**, multi-tag allowed) surfaces the operator's authentic takes so scripts are personal, not narrated Wikipedia.
@@ -433,7 +433,7 @@ A single source of truth at `deep-dive/brand/` (`brand.json` + `brand.md`) read 
 | 7 | Library rot (dupes/stale/orphans) | Handled by **`cb maintain`** (dedup, confidence decay, rebuild-index) on the shared `make_money/brain` vault; curated promotion (not dump); per-video scratch stays in the program folder (§10) |
 | 8 | Weak retention / disjointed acts | Retention layer + throughline spine + whole-film review gate + editorial rubric (§8) |
 | 9 | Stale/wrong offer in immutable masters | **Offer-figure indirection** — evergreen baked copy, live figure in description (§7) |
-| **OQ** | **Remaining open questions** | **Content-planning-doc format/location** (operator still drafting); confirm exact Pixabay source URLs in `LICENSES.md`. *(Resolved: YouTube = operator's channel + new series playlist; LinkedIn dropped; FWF theme = adapt kit + McKinsey; X self-reply + Premium ✓; promo = native snippets X/TikTok/IG/Threads; book + The Build URLs + offer in description; music supplied + licensed; logo/book-cover paths known. Concrete IDs/specifics in the private FWF config.)* |
+| **OQ** | **Remaining open questions** | Minor config: Adobe Stock license tier, CTA face-cam vs voice, caption-style default (assume 1–2 line bottom); confirm exact Pixabay source URLs. *(Resolved: **content guide PROVIDED** — editorial thesis + The Build content workbook + research-source roster, in the byline library; central brain = `make_money/brain`; YouTube = operator's channel + new playlist; LinkedIn dropped; FWF theme = adapt kit + McKinsey; X self-reply + Premium ✓; promo = native snippets X/TikTok/IG/Threads; book + The Build URLs + offer in description; music supplied + licensed.)* |
 
 ---
 
