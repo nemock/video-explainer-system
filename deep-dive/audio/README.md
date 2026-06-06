@@ -1,7 +1,12 @@
 # Deep-Dive — Audio assembly recipes (Phase 1.5)
 
-`audio_recipes.py` — pure ffmpeg/ffprobe (no Claude), the audio half of the RAM-safe,
-per-segment assembler. ffmpeg 8.1.1. Imported by the Phase-2 assembler; also a CLI.
+Pure ffmpeg/ffprobe (no Claude), the audio half of the RAM-safe, per-segment assembler.
+ffmpeg 8.1.1. Imported by the Phase-2 assembler; also a CLI.
+
+> **Moved in Phase 2.0:** these recipes now live in the engine package at
+> `src/explainer/deepdive/audio.py` (clean imports: `from explainer.deepdive.audio import …`).
+> The CLI is `python -m explainer.deepdive.audio <duck|norm|measure|seam|demo> …`.
+> The command examples below still apply with that invocation.
 
 ## The four operations
 | Op | Function / CLI | What it does |
@@ -23,17 +28,17 @@ seam check      : -14.0 → -14.0 = 0.00 LU  ✓ pass ;  -14.0 → -9.4 = 4.58 L
 
 ## Command set
 ```bash
-PY=~/myenv/bin/python ; R=deep-dive/audio/audio_recipes.py
+R="~/myenv/bin/python -m explainer.deepdive.audio"
 # 1. act bed under act VO (per segment)
-$PY $R duck --vo seg_vo.wav --bed deep-dive/shared/music/act-bed/<track>.mp3 --out seg_mix.wav --duck-db 22
+$R duck --vo seg_vo.wav --bed deep-dive/shared/music/act-bed/<track>.mp3 --out seg_mix.wav --duck-db 22
 # 1b. sponsor bed under an interstitial read (same op, sponsor bed)
-$PY $R duck --vo interstitial_vo.wav --bed deep-dive/shared/music/breakzstudios-...165192.mp3 --out int_mix.wav --bed-floor-db -18
+$R duck --vo interstitial_vo.wav --bed deep-dive/shared/music/breakzstudios-...165192.mp3 --out int_mix.wav --bed-floor-db -18
 # 2. final loudness gate
-$PY $R norm --in film_audio.wav --out film_audio_-14.wav --i -14 --tp -1
+$R norm --in film_audio.wav --out film_audio_-14.wav --i -14 --tp -1
 # 3. measure any clip
-$PY $R measure --in clip.wav
+$R measure --in clip.wav
 # 4. seam level-match check across assembled segments
-$PY $R seam seg01.wav seg02.wav seg03.wav --max-delta 1.0
+$R seam seg01.wav seg02.wav seg03.wav --max-delta 1.0
 ```
 
 ## Notes
