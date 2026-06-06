@@ -93,7 +93,7 @@ The product's job: take a topic (or inspire one from a content-planning document
 ## 6. Functional requirements
 
 ### 6.1 Initiation & topic selection
-- FR-1 — Initiate with (a) a named topic, or (b) a **content-planning document** the skill parses to propose candidates, cross-checked against `subjects/` (prefer fresh ground or deliberate follow-ons).
+- FR-1 — Initiate with (a) a named topic, or (b) the **content guide** (the byline `editorial_thesis.md` + The Build theme calendar in `content_workbook.md` + `research_sources.md`) the skill reads to propose candidates, cross-checked against the brain's covered topics (prefer fresh ground or deliberate follow-ons).
 - FR-2 — Create a program directory and a **crash-safe `program-manifest.json`** (atomic writes, `schema_version`, `.bak` + journal, single-writer, reconcile-against-disk).
 
 ### 6.2 Research & knowledge library
@@ -205,7 +205,7 @@ Intake → library-first Research → 3-Act Plan + retention spine (rubric gate 
 **Resolved this round:** book URL `davesaunders.net/book` · The Build URL `davesaunders.net/free-trial` · The Build offer **$14.95 to start, then $79/mo, plus $1,500+ in free bonuses** (→ YouTube description, not baked) · music supplied + Pixabay-licensed (logo + two act beds) · **X Premium = yes**.
 
 **Still needed:**
-1. **Content-planning document** — the operator is still drafting it; its format/location is the last real input before a first build. *(This is the natural next handoff.)*
+1. **Content guide — PROVIDED** (in the byline library: `editorial_thesis.md` + `content_workbook.md` + `research_sources.md`). Deep-dive topic selection draws from the thesis archetypes, The Build's theme calendar, the named frameworks, the research roster, and the YouTube competitive scan. The deep-dive's own "Part II" (format application of the thesis) is a **build task**, not an input still owed. *(First topic already chosen: pitch deck.)*
 2. **Caption style** — confirm 1–2 line bottom default for long-form (will assume yes unless told otherwise).
 
 **Build tasks (not questions):** wire the deep-dive into the shared `make_money/brain` cb vault (D4 resolved); confirm exact Pixabay source URLs in `shared/music/LICENSES.md`.
@@ -217,4 +217,4 @@ Intake → library-first Research → 3-Act Plan + retention spine (rubric gate 
 - **Phase 1:** Resolve remaining open questions; **wire into the shared `make_money/brain` cb vault** (intake/query/maintain); build the **FWF theme + McKinsey-grade info-design slide system** + brand spec; record + register the face-cam sponsor interstitials; establish the music layer + licenses.
 - **Phase 2:** Orchestrator + crash-safe manifest; sub-segment record→align(gate)→render→review loop; retention/editorial planning + rubric gates; assembly (format-contract conform + concat + ffprobe offsets + caption stitch + chapters + master-integrity); observability (`build-log`, `doctor`).
 - **Phase 3:** YouTube publishing (operator's channel, new series playlist, hardened upload, packaging, end screens/cards) **+ the snippet promo engine** (3–6 <2-min native clips → X/TikTok/IG/Threads via Blotato, pointing at the captured YouTube URL).
-- **Phase 4:** First real deep-dive end-to-end from the operator's content-planning document; refine from the run. *(Later: a dedicated YouTube Short top-of-funnel.)*
+- **Phase 4:** First real deep-dive end-to-end (the pitch-deck topic, off the content guide + first-project seed); refine from the run. *(Later: a dedicated YouTube Short top-of-funnel.)*
