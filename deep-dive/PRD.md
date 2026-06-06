@@ -30,6 +30,11 @@ The product's job: take a topic (or inspire one from a content-planning document
 | D3 | **Promo = short native snippets (<2 min) on X + TikTok + Instagram + Threads** (Blotato), pointing to YouTube. Core to V1 (the film exceeds X's 2-min cap). Deep-dive itself stays 16:9 long-form. |
 | D4 | **Knowledge library backend: spike `company-brain` (cb) vs bespoke** before committing. |
 | D5 | **Deck/visual layer = McKinsey-grade information design**, adapted to FWF + motion (action titles, one-message slides, disciplined data-viz). Use the `mckinsey-presentations` skill's standards. |
+| D6 | **Sponsor interstitials = iPad face-to-camera video**, composited ~80% (PiP) on the FWF branded background; recorded once, version-pinned. ffmpeg compositing, no new tools. CTA optionally face-cam. |
+| D7 | **Adobe Stock** (operator subscription) — licensed photo + video B-roll; shot list proposes search prompts; catalog tracks asset ID + license. |
+| D8 | **YouTube competitive research at project start** — top videos' titles/descriptions/transcripts via WebSearch + `yt-dlp`; reverse-engineer what works → informs angle, titles, thumbnails. |
+| D9 | **Teach toward a transformative outcome** — every deep-dive declares the viewer benefit; headline sells the transformation, not the topic. |
+| D10 | **Custom YouTube thumbnail** — default on-brand composite (FWF template + keyword text + operator selfie corner); optional AI via the operator's nano-banana/Gemini API or interactive handoff; uploaded as Blotato custom thumbnail. |
 
 ---
 
@@ -94,15 +99,17 @@ The product's job: take a topic (or inspire one from a content-planning document
 ### 6.2 Research & knowledge library
 - FR-3 — **Library-first**: query existing sources/facts/assets before new research.
 - FR-4 — Web research (WebSearch/WebFetch); every claim a sourced `wiki fact` (no unsourced claims). Reddit/LinkedIn/Substack MCP for audience research.
+- FR-4b — **YouTube competitive scan (D8)**: find top-performing videos on the topic (WebSearch) and pull title/description/view-count/auto-transcript via `yt-dlp --skip-download`; analyze why they work; output a "what's working / gaps to beat" brief feeding angle, titles, and thumbnails. Store as `competitor-video` nodes.
 - FR-5 — Draft scripts in the operator's voice via `talktime` (per-program tag).
-- FR-6 — Produce a **visual shot list**: per beat, branded graphic or web asset, each with source + attribution + rights status.
+- FR-6 — Produce a **visual shot list**: per beat, choose branded graphic, web asset, or **Adobe Stock** photo/video (D7) — each with source + attribution + rights status. For Adobe Stock, emit **suggested search prompts** (keywords + beat + photo/video) for the operator to review and download from their subscription.
 - FR-7 — Maintain the **persistent knowledge library** (sources, facts, assets, subjects, arcs) with dedup-on-write (content hash for assets), `used_in[]` provenance, freshness/`as_of` decay, manifest + INDEX for retrieval.
 - FR-8 — **Promote (not dump)**: a real `promote` step curates rights-clean material up on completion, writes the arc node, marks the subject published.
 - FR-9 — **Backend decided by spike** (D4): host in a `cb` vault or bespoke store.
 
 ### 6.3 Content plan, retention & editorial
-- FR-10 — Decompose into a balanced three-act arc (target ≈ I 15–20% / II 55–60% / III 20–25%); warn on lopsided plans.
+- FR-10 — Decompose into **3 acts by default** (configurable per-project; 3 fits the two sponsor seams). **Act-balance per-project, default narrative-weighted** (~15–20 / 55–60 / 20–25 — i.e. ~5 / ~13 / ~6 min on ~24 min); even thirds optional for infomercial cadence. **Total length is not a hard constraint** (20+ min typical). Warn only on extreme lopsidedness. (Acts ≠ the ~60–90s recording sub-segments, which are invisible to the viewer.)
 - FR-11 — Author a **throughline spine** before recording: thesis, 2–3 open loops, explicit act-to-act callback/hand-off lines.
+- FR-11b — **Transformative outcome (D9)**: every deep-dive declares the viewer transformation/benefit at the top of the content plan; the headline sells that benefit, not the topic. Teach toward an outcome, not for teaching's sake. Gated in the rubric (FR-13).
 - FR-12 — **Retention layer**: mandatory cold open (payoff/stakes + primary loop); open-loop/payoff ledger with dangling-loop warnings; re-hook cadence (~every 90s); pre-sponsor teases.
 - FR-13 — **Editorial rubric gated twice** — at plan approval and at whole-film review (hook, balance, payoff integrity, beat variety, redundancy/dead-air, sponsor tease, packaging). Skill self-critiques the plan.
 - FR-14 — **Structural-variety guard**: warn when hook archetype / rhythm / payoff type repeats recent arcs.
@@ -114,11 +121,12 @@ The product's job: take a topic (or inspire one from a content-planning document
 - FR-18 — **Approve/reject gate** distinct from `rendered`, per sub-segment, with `review_notes`; **assembly gates on `approved`**. Re-recording one sub-segment doesn't reset its neighbors. Record out of order; resume across sessions.
 
 ### 6.5 Visual aids
-- FR-19 — Blend **auto-fetched web images/screenshots** (`ingest --url`/`--pdf`) with **branded graphics**.
+- FR-19 — Blend **branded graphics**, **auto-fetched web images/screenshots** (`ingest --url`/`--pdf`), and **licensed Adobe Stock** photo + video B-roll (D7). Stock video B-roll is composited (cutaway/background/inset) via the framing layer (FR-21b).
 - FR-20 — On-screen **attribution**; **rights status** tracked in the asset catalog and carried forward on reuse; flag doubtful-rights assets for approval.
 
 ### 6.6 Interstitials & CTA (operator-voiced, reusable)
-- FR-21 — Record the two sponsor interstitials + CTA **once in the operator's voice** (D2), version-pinned, reused on every deep-dive.
+- FR-21 — Record the two sponsor interstitials **once as iPad face-to-camera video** (D6), composited ~80% (PiP) on the FWF branded background; version-pinned, reused on every deep-dive. CTA optionally face-cam or operator-voiced.
+- FR-21b — **Compositing & framing layer** (ffmpeg 8.1.1, already installed): talking-head PiP onto the branded stage (deck-rendered frame + ffmpeg inset, rounded corners + shadow), stock-video compositing, optional green-screen `chromakey` or AI matting (brew/pip) for a cutout look. No NLE required. (Architecture §12.7.)
 - FR-22 — **Registry integrity**: per version store mp4 path, content hash, ffprobe format, structured offer facts + verified flag; assembly verifies existence + hash + format-contract conformance before concat; never mutate a published version in place.
 - FR-23 — **Offer-figure indirection**: evergreen baked copy; live price/bonus in the description.
 - FR-24 — Sponsor-break music under the interstitial voice for a consistent audio signature.
@@ -132,7 +140,7 @@ The product's job: take a topic (or inspire one from a content-planning document
 - FR-28 — Enforce a **versioned master-format contract** (h264 High@L4.0, yuv420p, 1920×1080, SAR 1:1, CFR fps, bt709/tv, AAC-LC 48 kHz **stereo**, faststart); `assemble --check` preflight + per-segment conform re-encode on any mismatch.
 - FR-29 — Concatenate via **concat demuxer + stream copy**; any forced re-encode is per-segment/streaming; never a whole-film filtergraph.
 - FR-30 — Derive all timing from **ffprobe** on conformed segments; stitch captions by frame-exact offsets (no-caption interstitials still advance the accumulator).
-- FR-31 — Emit **chapters** (forward-hook titles) and a **packaging step** (3–5 title variants + a purpose-built branded thumbnail, not a deck still); record chosen packaging in the arc node.
+- FR-31 — Emit **chapters** (forward-hook titles) and a **packaging step (D10)**: 3–5 **benefit-forward title variants** (informed by FR-4b) + a **custom thumbnail** — default an on-brand composite (FWF template + 3–5-word keyword text + operator selfie corner, background optionally removed); optional AI hero via the operator's nano-banana/Gemini API or interactive handoff; uploaded as the Blotato custom thumbnail. Record chosen packaging in the arc node.
 - FR-32 — **Master-integrity validation** (duration == Σ segments; last caption ≤ master; chapters monotonic; audio continuous across seams) + optional **dry-run assembly** + **disk-budget guard**.
 
 ### 6.9 Publishing
