@@ -40,6 +40,11 @@ This delivers the four properties the operator asked for:
 | D3 | **Promo = short native snippets (<2 min) on X + TikTok + Instagram + Threads** (Blotato), pointing back to YouTube | The 20-min film exceeds X's 2-min cap, so the snippet/repurposing module is **core, not deferred** — it is the promo engine (§14). YouTube-Shorts top-of-funnel remains a later add. |
 | D4 | **Knowledge library: `cb`-vs-bespoke spike before committing** | A short evaluation decides bespoke vs a `company-brain` vault (§10.5) |
 | D5 | **Deck/visual layer follows McKinsey-grade information-design**, adapted to FWF + motion | Action/"so-what" slide titles, one-message-per-slide, MECE structure, disciplined data-viz and visual hierarchy — rendered as dynamic animated FWF slides (§8.6, §17). Leverage the `mckinsey-presentations` skill's standards. |
+| D6 | **Sponsor interstitials = iPad face-to-camera video**, composited ~80% (PiP) on the FWF branded background | Dave's real face adds authenticity; still recorded once + version-pinned. ffmpeg compositing, no new tools (§12.7). CTA optionally face-cam too. |
+| D7 | **Adobe Stock** (operator subscription) is a licensed visual source — photo **and video** B-roll | The shot-list step proposes search prompts to review; downloaded assets enter the catalog with the Adobe Stock license + asset ID (§8.1, §9, §10.3). |
+| D8 | **YouTube competitive research at project start** — study the top-performing videos on the topic | WebSearch finds them; `yt-dlp` pulls title/description/view-count/**auto-transcript** (no video download). Reverse-engineer what's working → informs angle, title/thumbnail packaging, and gaps to beat. Stored as `competitor-video` nodes (§10.1). |
+| D9 | **Teach toward a transformative outcome, not for its own sake** | Every deep-dive declares the **viewer transformation/benefit** up front; the headline sells that benefit, not the topic. A required editorial element (§8.2, §8.5). |
+| D10 | **Custom YouTube thumbnail**, generated per best practices | Default = an on-brand **composite** (FWF template + 3–5-word high-impact keyword text + operator selfie in a corner) — deterministic, no AI needed. Optional AI hero via the operator's Google "nano banana"/Gemini API or an interactive Gemini handoff. Uploaded as Blotato custom thumbnail (§12.5). |
 
 ---
 
@@ -81,7 +86,7 @@ The engine has **no** concat/assemble/music/program command — those are net-ne
 A **segment** is the atomic unit: one `explainer` project rendering to one MP4 with captions + manifest. Kinds:
 
 - **Act segment** — operator-narrated content. Acts are **split into ~60–90s sub-segments** that are the unit of recording, review, and re-record (§6) — a bad sentence re-shoots one sub-segment, not a 5-minute act. Sub-segment boundaries fall on **idea boundaries** (each a named teaching unit), so the alignment-reliability limit and pacing structure coincide (§8.4).
-- **Interstitial segment** — a reusable, version-pinned operator-voiced asset (FWF sponsor, The Build sponsor, CTA).
+- **Interstitial segment** — a reusable, version-pinned operator-recorded asset: **face-to-camera video** for the FWF + The Build sponsors (D6, §7), voice (or face-cam) for the CTA.
 - **Bumper (optional)** — short branded transition/chapter card; if used, every divider carries a forward-hook ("Act II — the part everyone gets wrong"), never a bare "Act II" exit ramp (§8.5).
 
 A **program** is an ordered segment list plus global config (FWF brand, music, publish targets). Canonical order:
@@ -91,6 +96,10 @@ cold-open → act-1 → fwf-sponsor → act-2 → thebuild-sponsor → act-3 →
 ```
 
 The **cold open is mandatory** (§8.5): a 10–20s hook stating the payoff/stakes and planting the primary open loop.
+
+**Three acts is the default — and a deliberate fit.** The two internal seams (Act I→II and II→III) map 1:1 to the two sponsor properties (the FWF book after Act I, The Build after Act II), and it matches the proven play/infomercial 3-act arc. Act count is a **per-project parameter**, but 3 is the default *because* of that 2-sponsor fit — deviating means rethinking sponsor placement (there are only two sponsor properties). **Total length is not a hard constraint** — it follows the content (20+ min typical, ~24 min common). Balance profile in §8.4 (default narrative-weighted ~5 / ~13 / ~6).
+
+**Acts ≠ sub-segments.** The viewer experiences exactly 3 acts. Each act is merely *recorded* in ~60–90s **sub-segments** — purely a production/alignment mechanic (§6) — that concatenate seamlessly into one continuous act. Sub-segments are invisible in the final film.
 
 **Why per-segment projects:** bounded forced-alignment length, bounded render size, single-segment failure blast radius, naturally staged recording, and reusable interstitials.
 
@@ -191,6 +200,8 @@ Three reusable assets under `shared/interstitials/`, each an `explainer` project
 
 URLs: book = `http://davesaunders.net/book` · The Build = `https://davesaunders.net/free-trial`. **The Build offer = $14.95 to start, then $79/month, plus over $1,500 in free bonuses** — this goes in the **YouTube description**, not the spoken/on-screen interstitial (evergreen copy only, e.g. "start your free trial — link below"), so an offer change never strands an immutable master.
 
+**Recording format (D6 — face-to-camera video).** The two sponsor interstitials are **real video of Dave talking to camera**, recorded on his **iPad** and **composited at ~80% onto the FWF branded background** (PiP), rather than voice-over-graphics. His face on screen is the authenticity move. They are still **recorded once, version-pinned, and reused** (the build-once model is unchanged — just video now). The CTA can optionally be face-cam too, or stay operator-voiced. Compositing recipe + tooling in §12.7. iPad clips conform to the master-format contract (§12.1) like any other segment.
+
 **Self-sponsor framing:** because these are the operator's *own* properties, use a soft first-person frame ("Quick aside — if you want the deeper playbook, my book…") rather than third-party "brought to you by," and let the act script carry a one-line spoken **bridge into and out of** each break so the operator's voice brackets the interstitial.
 
 **Offer-figure indirection (brand-trust + immutability):** do **not** bake a specific price/bonus ("$14.96 / $1,500") into the spoken+on-screen asset — published masters are immutable and an evergreen wrong price is a trust/advertising-accuracy hazard across dozens of videos. The asset speaks evergreen copy ("a special offer for viewers — link below"); the exact figure lives in the **YouTube description / landing page**, editable without re-rendering.
@@ -217,10 +228,14 @@ The deep-dive is a **new format under Dave's byline**, so it inherits the existi
 0. **Library-first lookup** — before new research, query the knowledge library (§10) for existing sources/facts/assets and check `subjects/` for prior coverage (reuse, avoid repetition, surface rights-clean assets we already own).
 1. **Topic intake** — direct topic, or parse a content-planning document and propose candidates (cross-checked against `subjects/`).
 2. **Research** — WebSearch/WebFetch; every claim becomes a sourced `wiki fact` (no unsourced claims). Reddit/LinkedIn/Substack MCP for audience/primary research. **Promote** reusable, rights-clean sources/facts/assets into the library (§10.4).
+2b. **YouTube competitive scan (D8)** — find the **top-performing videos on the topic** (WebSearch), then `yt-dlp --skip-download` to pull each one's **title, description, view count, and auto-transcript** (no video download). Analyze for *why they worked*: title/thumbnail patterns, hook structure, angle, what they cover vs skip, comment themes. Output = a short "what's working / gaps to beat" brief that informs the angle, the **transformative-outcome framing** (§8.2), and the **packaging** (§12.5). Captured as `competitor-video` nodes (§10.1) so the intel compounds across videos. *(Learn from winners; don't clone — differentiate on the operator's scar-tested, framework-driven angle.)*
 3. **Voice** — `talktime --tag fwf` (tag is a **per-program parameter**, multi-tag allowed) surfaces the operator's authentic takes so scripts are personal, not narrated Wikipedia.
-4. **Visual shot list** — per beat: branded graphic or a web asset to fetch (`ingest --url`/`--pdf`), each with source URL + attribution + rights status.
+4. **Visual shot list** — per beat, choose the visual from three sources: (a) **branded graphic** (stat/compare/diagram/steps), (b) **web asset** (`ingest --url`/`--pdf`, editorial + attribution), or (c) **Adobe Stock** photo/video B-roll (D7). For (c), the planner emits **suggested Adobe Stock search prompts** (keywords + intended beat + photo-vs-video) as a reviewable list; Dave searches `stock.adobe.com`, downloads acceptable assets (his subscription = properly licensed), and they enter the catalog (§10.3) with the Adobe Stock license + asset ID. Every shot-list entry records source, intended slide, attribution, and rights status.
 
-### 8.2 Throughline spine (authored before any recording)
+### 8.2 Transformative outcome + throughline spine (authored before any recording)
+**Transformative outcome first (D9).** Before structure, name the **transformation**: what can the viewer *do, decide, or see differently* after watching that they couldn't before? Deep-dives teach toward an **outcome**, not for teaching's sake — the value is the change in the viewer, and the **headline sells that benefit**, not the topic. (E.g. not "What is a pitch deck" but "build the right company by pressure-testing it on ten slides before you waste a year.") The competitive scan (§8.1.2b) and the byline thesis (§8.0: practical, framework-driven, forward motion) both feed this. Record the transformation + the one-line benefit promise at the top of `content-plan.md`; the cold open and headline derive from it.
+
+**Throughline spine.**
 A `content-plan.md` spine: the one-sentence **thesis**; **2–3 open loops** (questions/promises planted in Act I); and the explicit **callback/hand-off line** that closes each act/sub-segment and opens the next — so seams between independently-recorded acts are *designed*, not emergent. Each act's recording prompt references the prior sub-segment's closing energy + hand-off line (§6.3).
 
 ### 8.3 Retention mechanics
@@ -231,11 +246,11 @@ A `content-plan.md` spine: the one-sentence **thesis**; **2–3 open loops** (qu
 - **Whole-film review gate** — a manifest state (`assembled → reviewed-film → publishable`) where the operator watches the master end-to-end for pacing, seams, and broken callbacks before publish.
 
 ### 8.4 Act balance & sub-segmenting (editorial, not just technical)
-Target proportions ≈ **Act I 15–20% · Act II 55–60% · Act III 20–25%**; warn on lopsided plans. Sub-segment boundaries fall on **idea boundaries** (named teaching units) — satisfying the ≤~6-min alignment limit *and* pacing at once. Record intended per-act durations; flag at render when actuals diverge >25%.
+**Act-balance is a per-project choice, defaulting to narrative-weighting** — **Act I ~15–20% (setup) · Act II ~55–60% (the teaching bulk) · Act III ~20–25% (payoff)**, i.e. roughly **~5 / ~13 / ~6 min** on a ~24-min piece. The two sponsor breaks fall at the **natural narrative seams** (after the short setup, then after the long core) — breaks at story pauses, which is the point of the act structure, not at arbitrary time marks. Even-ish thirds (~8/8/8) stays available for a more infomercial cadence. **Total length is not a hard constraint** — it follows the content (20+ min typical). Warn only on *extreme* lopsidedness, not on the chosen profile. Sub-segment boundaries fall on **idea boundaries** (named teaching units) — satisfying the ≤~6-min alignment limit *and* pacing at once. Record intended per-act durations; flag at render when actuals diverge materially from the chosen profile.
 
 ### 8.5 Editorial rubric (gated twice)
 A checklist artifact in the manifest, not vibes:
-- **At plan approval (before recording):** hook strength, open-loop count, act-balance, payoff clarity, beat variety, "why watch 20 min of this." The skill self-critiques the plan and reports weak acts.
+- **At plan approval (before recording):** **transformative outcome named + benefit-forward headline (D9)**, hook strength, open-loop count, act-balance, payoff clarity, beat variety, "why watch this." The skill self-critiques the plan and reports weak acts.
 - **At whole-film review (before publish):** retention-risk read-through, seam check (incl. act↔interstitial voice/energy), redundancy/dead-air, sponsor-tease present, packaging present.
 - **Structural-variety guard:** compare the proposed arc's hook archetype / three-act rhythm / payoff type against the last N published arcs; warn on formulaic sameness (counterbalancing the library's reuse bias).
 
@@ -253,7 +268,7 @@ These map onto (and extend) the engine's slide types (statement/steps/stat/statg
 
 ## 9. Visual aids module
 
-Blend **auto-fetched web images/screenshots** (`ingest --url`/`--pdf`, `figure` slides) with **branded graphics** (stat/compare/diagram/steps). On-screen **attribution** for third-party assets; **rights status** tracked in the asset catalog (§10.3) and carried forward on reuse. Flag doubtful-rights assets for operator approval; prefer official sources or branded re-draws of charts.
+Three visual sources, blended: **branded graphics** (stat/compare/diagram/steps), **auto-fetched web images/screenshots** (`ingest --url`/`--pdf`, `figure` slides; editorial use + on-screen attribution), and **licensed Adobe Stock** photo **and video** B-roll (D7 — operator subscription; the shot list proposes search prompts to review/download, §8.1). **Rights status + license** are tracked in the asset catalog (§10.3) and carried forward on reuse; flag doubtful-rights web assets for approval, prefer official sources or branded re-draws. **Stock video B-roll** is composited via the framing layer (§12.7) — as a full-frame cutaway, a background behind branded text, or an inset — bringing real motion into the otherwise slide-driven film.
 
 ---
 
@@ -262,13 +277,13 @@ Blend **auto-fetched web images/screenshots** (`ingest --url`/`--pdf`, `figure` 
 A system-root library that **accumulates across every deep-dive**, so research and visuals compound. Where the program manifest is the state of *one* film, this is the long-term memory of the whole show.
 
 ### 10.1 Node types
-`sources/` (url, accessed, credibility, topics, used_in) · `facts/` (body, source, confidence, **as_of**, topics, used_in) · `subjects/` (summary, programs, status, related) · `arcs/` (hook archetype, **open_loops[]/payoffs[]**, act_beats, payoff type, structure_tags) · `entities/` (recurring people/companies/products) · `assets/` (§10.3).
+`sources/` (url, accessed, credibility, topics, used_in) · `facts/` (body, source, confidence, **as_of**, topics, used_in) · `subjects/` (summary, programs, status, related) · `arcs/` (hook archetype, **open_loops[]/payoffs[]**, act_beats, payoff type, structure_tags) · `entities/` (recurring people/companies/products) · `competitor-video/` (D8: url, channel, title, views, published, transcript-summary, what-worked, topics) · `assets/` (§10.3).
 
 ### 10.2 "AI-optimized"
 Typed markdown + frontmatter, `[[wikilinks]]`, a machine-readable `wiki-manifest.json` for staged retrieval (filter then read), a curated `INDEX.md`, **dedup on write**, provenance + `used_in[]` everywhere, and **freshness/decay** on volatile facts (prices, market sizes flag for re-verification).
 
 ### 10.3 Graphical-asset catalog
-`assets/catalog.json` per element: `{id, type, path, source_url, captured, attribution, license, rights_status (approved|needs-review|rejected), topics, used_in[]}`. Enables "do we already have a rights-approved screenshot of X?" lookups and keeps rights/attribution attached to the pixel forever. **Asset dedup is a content hash, not LLM judgment.**
+`assets/catalog.json` per element: `{id, type (branded-graphic | web-screenshot | web-image | pdf-figure | adobe-stock-photo | adobe-stock-video | facecam-video), path, source_url, stock_asset_id, captured, attribution, license (e.g. "Adobe Stock — Standard", "editorial/attribution", "owned"), rights_status (approved|needs-review|rejected), topics, used_in[]}`. Enables "do we already have a rights-approved asset for X?" lookups and keeps license/attribution attached to the pixel forever. Adobe Stock entries store the **asset ID + license tier** so reuse across videos is auditable against the subscription terms. **Asset dedup is a content hash, not LLM judgment.**
 
 ### 10.4 Promotion (not dumping)
 Program `research/` is the staging area; the library is the curated store. On completion, a real **`promote`** step copies rights-clean nodes/assets up (with `used_in[]` back-refs, refusing duplicates), writes the **arc** node, and marks the **subject** published. Promotion is a command, not a manual habit, so it isn't skipped under time pressure.
@@ -312,12 +327,26 @@ Each segment's SRT/VTT (from forced alignment) is offset by the **ffprobe-measur
 
 ### 12.5 Chapters & packaging
 - **Chapters** from segment boundaries → `chapters.txt` (YouTube format); chapter titles are **forward-hooks**, not bare "Act II."
-- **Packaging step:** generate 3–5 **title variants** + a **purpose-built branded thumbnail** (bold 3–5-word overlay + a strong figure/screenshot — *not* a recycled deck still); operator picks; chosen packaging recorded in the arc node. One title variant seeds the X hook copy.
+- **Packaging step (informed by the §8.1.2b competitive scan):** generate 3–5 **benefit-forward title variants** (D9 — sell the transformation, against what the top videos use) + a **custom thumbnail (D10)**. Default thumbnail = an on-brand **composite** via the framing layer (§12.7): FWF template + **3–5-word high-impact keyword text** + the **operator's selfie in a corner** (background optionally removed via `rembg`), 1280×720 — deterministic, repeatable, no AI needed. Optional AI hero/background via the operator's Google **"nano banana"/Gemini** API, or an **interactive Gemini handoff** (the skill writes the prompt + says which images to drop in; operator generates, drags the result back). The `image` skill is also available. Operator picks; chosen packaging recorded in the arc node; uploaded as the **Blotato custom thumbnail**. One title variant seeds the X hook copy.
 
 ### 12.6 Validation (master integrity)
 Assert: master duration == Σ conformed segment durations (within tolerance); last caption end ≤ master duration; chapters monotonic + in-bounds; **audio present and continuous across every seam** (detect silence-drops at concat points); seam LUFS-delta within threshold. A **dry-run assembly** (chapter list + caption stitch + low-res proxy concat) lets the operator verify ordering/timing cheaply before the expensive final encode. A **disk-budget guard** estimates scratch up front and checks free space on `/Volumes/Casima` rather than failing a long build at ENOSPC.
 
 Output: `master/deepdive_16x9.mp4` + captions + chapters + chosen packaging.
+
+### 12.7 Compositing & framing layer (ffmpeg)
+Confirmed locally available: **ffmpeg 8.1.1** (Homebrew) with all needed filters — `scale`, `pad`, `overlay`, `geq` (rounded-corner alpha masks), `boxblur` (drop shadows), `chromakey`/`colorkey`/`despill` (green screen), `colorchannelmixer`, `scale2ref`. PiP and framed composites need **no new tooling**.
+
+**Talking-head PiP (sponsor interstitials, D6).** Dave's iPad face-to-camera clip scaled to ~80% and laid on the FWF branded background. Recommended build:
+1. Render the **branded stage** in the existing HTML/Playwright deck — deep-purple bg + vignette, book cover / URL / evergreen offer text (or lower-third), and a defined **window region** with rounded border + soft shadow where the face goes.
+2. ffmpeg: scale the iPad clip to the window, apply rounded corners (alpha mask) + drop shadow, `overlay` at the window position over the branded stage, keep his audio. Conform to the master-format contract (§12.1).
+Reuses the deck engine for branding + ffmpeg for the inset — on-brand, and RAM-trivial (short segment, per-segment streaming per §9a).
+
+**Background options.** The 80% PiP window needs **no background removal** (his whole iPad frame sits in the window). For a *cutout* look (real room replaced entirely): shoot against a **green screen** → ffmpeg `chromakey`+`despill` (available now), or AI video matting (**Robust Video Matting** / `rembg` / `backgroundremover`, installable via `brew`/`pip`) for no-green-screen. Optional, later.
+
+**Stock video B-roll (§9).** Same layer composites licensed Adobe Stock footage: full-frame cutaways, backgrounds behind branded text (overlaid from the deck), or insets. **iPad recording guidance:** landscape 16:9, 1080p+, good light, ~arm's-length framing for the window crop.
+
+**Heavier editing.** No NLE is required for the automated pipeline; `Shotcut`/`Kdenlive` (brew casks) are available if a manual pass is ever wanted. The automated path stays **ffmpeg + the HTML deck**.
 
 ---
 
