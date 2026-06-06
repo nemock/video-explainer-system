@@ -31,3 +31,10 @@ phase0/video/
 # Brand/logo assets must NOT live in this dev repo (use ~/.claude/explainer-brands/)
 BRG Logos/
 *.png.import
+
+# Deep-dive operator content (brand assets, licensed music, per-program builds) —
+# this repo tracks only the deep-dive design docs + future code. (deep-dive/wiki/ is
+# already covered by the wiki/ rule above.)
+deep-dive/brand/
+deep-dive/shared/
+deep-dive/programs/
