@@ -21,7 +21,7 @@ The deep-dive system targets **20+ minute, three-act, human-narrated tutorial vi
 [Cold open] → Act I → [FWF sponsor] → Act II → [The Build sponsor] → Act III → [Like & Subscribe CTA]
 ```
 
-Each act is its own `explainer` project (`--voice-source operator`), recorded and rendered independently. The two sponsor interstitials and the CTA are **reusable, version-pinned assets recorded once in the operator's own voice** (decision §0.1). A final ffmpeg **assembly pass** conforms every segment to a strict format contract, concatenates them, lays down music, normalizes loudness, stitches captions with frame-exact offsets, and emits the master 16:9 film plus chapters.
+Each act is its own `explainer` project (`--voice-source operator`), recorded and rendered independently. The two sponsor interstitials and the CTA are **reusable, version-pinned assets recorded once** (face-to-camera video for the sponsors per D6; voice for the CTA). A final ffmpeg **assembly pass** conforms every segment to a strict format contract, concatenates them, lays down music, normalizes loudness, stitches captions with frame-exact offsets, and emits the master 16:9 film plus chapters.
 
 This delivers the four properties the operator asked for:
 
@@ -36,13 +36,13 @@ This delivers the four properties the operator asked for:
 |---|---|---|
 | D1 | **Brand-parameterized; FWF is the primary instance** (not a CIRCUMVENT default) | Real FWF theme (purple/indigo/Montserrat), D-rocket + @davesaunders identity anchors (§17); brand config is swappable |
 | D1a | **YouTube = the operator's personal channel + a NEW dedicated deep-dive series playlist** (account/playlist IDs in the private FWF config) | **LinkedIn dropped** for now (§13) |
-| D2 | **Sponsor reads + CTA are operator-voiced, recorded once** (not TTS) | Kills the human→synthetic seam; near-eliminates synthetic-media exposure; interstitials are `--voice-source operator`, version-pinned (§7) |
+| D2 | **Sponsor reads + CTA are operator-recorded, recorded once** (not TTS) | Kills the human→synthetic seam; near-eliminates synthetic-media exposure; version-pinned (§7). **Sponsors upgraded to face-cam video by D6.** |
 | D3 | **Promo = short native snippets (<2 min) on X + TikTok + Instagram + Threads** (Blotato), pointing back to YouTube | The 20-min film exceeds X's 2-min cap, so the snippet/repurposing module is **core, not deferred** — it is the promo engine (§14). YouTube-Shorts top-of-funnel remains a later add. |
 | D4 | **Central library = the shared `make_money/brain` cb vault** (resolved) | One content brain across FWF / personal / deep-dives / MedTech Monday / Founder Tip Tuesday / carousels. Per-video `research/` staging promotes up via `cb intake`. Not the cb *code* repo, not client vaults (§10) |
 | D5 | **Deck/visual layer follows McKinsey-grade information-design**, adapted to FWF + motion | Action/"so-what" slide titles, one-message-per-slide, MECE structure, disciplined data-viz and visual hierarchy — rendered as dynamic animated FWF slides (§8.6, §17). Leverage the `mckinsey-presentations` skill's standards. |
 | D6 | **Sponsor interstitials = iPad face-to-camera video**, composited ~80% (PiP) on the FWF branded background | Dave's real face adds authenticity; still recorded once + version-pinned. ffmpeg compositing, no new tools (§12.7). CTA optionally face-cam too. |
-| D7 | **Adobe Stock** (operator subscription) is a licensed visual source — photo **and video** B-roll | The shot-list step proposes search prompts to review; downloaded assets enter the catalog with the Adobe Stock license + asset ID (§8.1, §9, §10.3). |
-| D8 | **YouTube competitive research at project start** — study the top-performing videos on the topic | WebSearch finds them; `yt-dlp` pulls title/description/view-count/**auto-transcript** (no video download). Reverse-engineer what's working → informs angle, title/thumbnail packaging, and gaps to beat. Stored as `competitor-video` nodes (§10.1). |
+| D7 | **Adobe Stock** (operator subscription) is a licensed visual source — photo **and video** B-roll | The shot-list step proposes search prompts to review; downloaded assets are recorded in the brain (`source` node + `_attachments`) with the Adobe Stock license + asset ID (§8.1, §9, §10.1). |
+| D8 | **YouTube competitive research at project start** — study the top-performing videos on the topic | WebSearch finds them; `yt-dlp` pulls title/description/view-count/**auto-transcript** (no video download). Reverse-engineer what's working → informs angle, title/thumbnail packaging, and gaps to beat. Stored as `source` nodes (web-snapshot/skill-output) in the brain (§10.1). |
 | D9 | **Teach toward a transformative outcome, not for its own sake** | Every deep-dive declares the **viewer transformation/benefit** up front; the headline sells that benefit, not the topic. A required editorial element (§8.2, §8.5). |
 | D10 | **Custom YouTube thumbnail**, generated per best practices | Default = an on-brand **composite** (FWF template + 3–5-word high-impact keyword text + operator selfie in a corner) — deterministic, no AI needed. Optional AI hero via the operator's Google "nano banana"/Gemini API or an interactive Gemini handoff. Uploaded as Blotato custom thumbnail (§12.5). |
 
@@ -61,7 +61,7 @@ This delivers the four properties the operator asked for:
 | Manifest / QA | `manifest`, `qa`, `validate` | Per-segment readiness |
 | Source ingestion | `ingest --url` / `--pdf` / `--full-page` | Web screenshots + PDF figures |
 | Per-slide stills | `stills` | Thumbnail + clip source |
-| Fact capture | `wiki source` / `wiki fact` | Sourced research nodes |
+| Fact capture | `wiki source` / `wiki fact` | Local research-staging nodes; promoted to the brain via `cb intake` (§10) |
 | Voice library | `talktime --tag fwf` | Draft scripts in the operator's voice |
 | Blotato hand-off | `handoff` | Per-platform post spec (extended, §13) |
 
@@ -69,7 +69,7 @@ This delivers the four properties the operator asked for:
 
 - **Program orchestration & crash-safe state** (§5) — the `program-manifest.json` state machine: atomic writes, schema version, single-writer, intent-only, reconcile-against-disk.
 - **Three-act content planning + retention/editorial layer** (§8) — throughline spine, open-loop/payoff ledger, editorial rubric, act-balance.
-- **Operator-voiced interstitial library** (§7) — FWF sponsor, The Build sponsor, CTA — recorded once, version-pinned, integrity-checked.
+- **Operator-recorded interstitial library** (§7) — FWF + The Build sponsors (face-cam video, D6) + CTA — recorded once, version-pinned, integrity-checked.
 - **Knowledge brain** (§10) — the shared `make_money/brain` cb vault; deep-dives promote into it and query from it (cross-format reuse).
 - **Audio & music layer** (§11) — sponsor-break music, optional act bed, per-segment ducking + loudness.
 - **Assembly / master render** (§12) — format-contract conform, concat, ffprobe-derived offsets, seam QA, master-integrity validation, packaging.
@@ -116,7 +116,7 @@ deep-dive/
 ├── brand/                                  # FWF brand spec (§17): theme tokens, logo/D-rocket, fonts, handle/home, voice profile
 │   (no local wiki — the central knowledge brain is the shared cb vault make_money/brain, §10)
 ├── shared/
-│   ├── interstitials/                      # operator-voiced, version-pinned (§7)
+│   ├── interstitials/                      # operator-recorded (face-cam video, D6), version-pinned (§7)
 │   │   ├── fwf-sponsor/ · thebuild-sponsor/ · like-subscribe-cta/
 │   │   └── interstitial-registry.json      # version → {mp4, hash, ffprobe-format, offer-facts, verified}
 │   └── music/ (sponsor logo · act-bed/ · LICENSES.md)   # supplied tracks live here (or in the operator brand dir)
@@ -185,9 +185,9 @@ Because each sub-segment is independent, the operator can re-record one sub-segm
 
 ---
 
-## 7. Operator-voiced interstitial library (recorded once, reused)
+## 7. Operator-recorded interstitial library (recorded once, reused)
 
-Three reusable assets under `shared/interstitials/`, each an `explainer` project recorded **once in the operator's own voice** (D2), rendered to a pinned MP4, and registered with integrity metadata. They are **not** rebuilt per video.
+Three reusable assets under `shared/interstitials/`, each recorded **once** (face-to-camera video for the two sponsors per D6; voice — or optionally face-cam — for the CTA), rendered to a pinned MP4, and registered with integrity metadata. They are **not** rebuilt per video.
 
 | Asset | Placement | Content | Length |
 |---|---|---|---|
@@ -222,12 +222,12 @@ The deep-dive is a **new format under Dave's byline**, so it inherits the existi
 - **`humanizer` skill is prose ground-truth.** Every script bound for the voiceover runs through `humanizer`; for this **spoken** format, run humanizer on the script as written, then a separate **spoken-cadence pass** (never pre-shorten before humanizer, never skip it). This is a hard step in the script stage (§6/§8.2).
 
 ### 8.1 Research (library-first)
-0. **Library-first lookup** — before new research, query the knowledge library (§10) for existing sources/facts/assets and check `subjects/` for prior coverage (reuse, avoid repetition, surface rights-clean assets we already own).
+0. **Library-first lookup** — before new research, query the brain (§10) for existing sources/facts/assets and prior topic coverage (produced-piece `source` nodes by topic) — reuse, avoid repetition, surface rights-clean assets we already own.
 1. **Topic intake** — direct topic, or read the **content guide** (byline `editorial_thesis.md` + The Build theme calendar + `research_sources.md`, in the byline library) and propose candidates, cross-checked against the brain's covered topics.
-2. **Research** — WebSearch/WebFetch; every claim becomes a sourced `wiki fact` (no unsourced claims). Reddit/LinkedIn/Substack MCP for audience/primary research. **Promote** reusable, rights-clean sources/facts/assets into the library (§10.4).
-2b. **YouTube competitive scan (D8)** — find the **top-performing videos on the topic** (WebSearch), then `yt-dlp --skip-download` to pull each one's **title, description, view count, and auto-transcript** (no video download). Analyze for *why they worked*: title/thumbnail patterns, hook structure, angle, what they cover vs skip, comment themes. Output = a short "what's working / gaps to beat" brief that informs the angle, the **transformative-outcome framing** (§8.2), and the **packaging** (§12.5). Captured as `competitor-video` nodes (§10.1) so the intel compounds across videos. *(Learn from winners; don't clone — differentiate on the operator's scar-tested, framework-driven angle.)*
+2. **Research** — WebSearch/WebFetch; every claim becomes a sourced fact in the local `research/` staging (no unsourced claims). Reddit/LinkedIn/Substack MCP for audience/primary research. **Promote** reusable, rights-clean sources/facts/assets into the brain (§10.3).
+2b. **YouTube competitive scan (D8)** — find the **top-performing videos on the topic** (WebSearch), then `yt-dlp --skip-download` to pull each one's **title, description, view count, and auto-transcript** (no video download). Analyze for *why they worked*: title/thumbnail patterns, hook structure, angle, what they cover vs skip, comment themes. Output = a short "what's working / gaps to beat" brief that informs the angle, the **transformative-outcome framing** (§8.2), and the **packaging** (§12.5). Captured as `source` nodes (web-snapshot/skill-output, §10.1) so the intel compounds across videos. *(Learn from winners; don't clone — differentiate on the operator's scar-tested, framework-driven angle.)*
 3. **Voice** — `talktime --tag fwf` (tag is a **per-program parameter**, multi-tag allowed) surfaces the operator's authentic takes so scripts are personal, not narrated Wikipedia.
-4. **Visual shot list** — per beat, choose the visual from three sources: (a) **branded graphic** (stat/compare/diagram/steps), (b) **web asset** (`ingest --url`/`--pdf`, editorial + attribution), or (c) **Adobe Stock** photo/video B-roll (D7). For (c), the planner emits **suggested Adobe Stock search prompts** (keywords + intended beat + photo-vs-video) as a reviewable list; Dave searches `stock.adobe.com`, downloads acceptable assets (his subscription = properly licensed), and they enter the catalog (§10.3) with the Adobe Stock license + asset ID. Every shot-list entry records source, intended slide, attribution, and rights status.
+4. **Visual shot list** — per beat, choose the visual from three sources: (a) **branded graphic** (stat/compare/diagram/steps), (b) **web asset** (`ingest --url`/`--pdf`, editorial + attribution), or (c) **Adobe Stock** photo/video B-roll (D7). For (c), the planner emits **suggested Adobe Stock search prompts** (keywords + intended beat + photo-vs-video) as a reviewable list; Dave searches `stock.adobe.com`, downloads acceptable assets (his subscription = properly licensed), and they're recorded in the brain (`source` node + `_attachments`, §10.1) with the Adobe Stock license + asset ID. Every shot-list entry records source, intended slide, attribution, and rights status.
 
 ### 8.2 Transformative outcome + throughline spine (authored before any recording)
 **Transformative outcome first (D9).** Before structure, name the **transformation**: what can the viewer *do, decide, or see differently* after watching that they couldn't before? Deep-dives teach toward an **outcome**, not for teaching's sake — the value is the change in the viewer, and the **headline sells that benefit**, not the topic. (E.g. not "What is a pitch deck" but "build the right company by pressure-testing it on ten slides before you waste a year.") The competitive scan (§8.1.2b) and the byline thesis (§8.0: practical, framework-driven, forward motion) both feed this. Record the transformation + the one-line benefit promise at the top of `content-plan.md`; the cold open and headline derive from it.
@@ -265,7 +265,7 @@ These map onto (and extend) the engine's slide types (statement/steps/stat/statg
 
 ## 9. Visual aids module
 
-Three visual sources, blended: **branded graphics** (stat/compare/diagram/steps), **auto-fetched web images/screenshots** (`ingest --url`/`--pdf`, `figure` slides; editorial use + on-screen attribution), and **licensed Adobe Stock** photo **and video** B-roll (D7 — operator subscription; the shot list proposes search prompts to review/download, §8.1). **Rights status + license** are tracked in the asset catalog (§10.3) and carried forward on reuse; flag doubtful-rights web assets for approval, prefer official sources or branded re-draws. **Stock video B-roll** is composited via the framing layer (§12.7) — as a full-frame cutaway, a background behind branded text, or an inset — bringing real motion into the otherwise slide-driven film.
+Three visual sources, blended: **branded graphics** (stat/compare/diagram/steps), **auto-fetched web images/screenshots** (`ingest --url`/`--pdf`, `figure` slides; editorial use + on-screen attribution), and **licensed Adobe Stock** photo **and video** B-roll (D7 — operator subscription; the shot list proposes search prompts to review/download, §8.1). **Rights status + license** are tracked on each asset's brain record (`source` node + `_attachments`, §10.1) and carried forward on reuse; flag doubtful-rights web assets for approval, prefer official sources or branded re-draws. **Stock video B-roll** is composited via the framing layer (§12.7) — as a full-frame cutaway, a background behind branded text, or an inset — bringing real motion into the otherwise slide-driven film.
 
 ---
 
@@ -285,6 +285,7 @@ The deep-dive's knowledge maps directly onto the vault's existing node types (`m
 - **`playbook` / `question` / `hypothesis`** — procedures, open unknowns, bets.
 - **Produced pieces** (a published deep-dive, carousel, MedTech Monday, etc.) → a **`source`** node, source_kind `skill-output` + `producing_skill`, tagged by topic — so "what have we covered, from what angle?" is a query, and evergreen/derivative reuse is explicit.
 - **Assets** (screenshots, Adobe Stock photo/video, face-cam) → `_attachments/` + a `source` node carrying **license, attribution, rights_status, stock_asset_id** — the rights record travels with the asset; reuse is auditable against the subscription.
+- **Narrative-arc record** (hook archetype, `open_loops`/`payoffs`, act beats, chosen packaging, `structure_tags`) → stored on the produced-piece `source` node and/or a `pattern` node. *(Referred to elsewhere in this doc as "the arc node/record.")*
 
 ### 10.2 Tooling (cb — already in use here)
 `cb intake` / `atomize` (research → typed nodes), `cb query` (staged retrieval, auto-injected pillars, citations), `cb maintain` (repair, **confidence decay**, dedup, rebuild INDEX), `cb visualize` (graph viewer). This is exactly the dedup/decay/maintenance/query machinery we'd otherwise rebuild — we get it for free, battle-tested in your setup.
@@ -344,7 +345,7 @@ Confirmed locally available: **ffmpeg 8.1.1** (Homebrew) with all needed filters
 **Talking-head PiP (sponsor interstitials, D6).** Dave's iPad face-to-camera clip scaled to ~80% and laid on the FWF branded background. Recommended build:
 1. Render the **branded stage** in the existing HTML/Playwright deck — deep-purple bg + vignette, book cover / URL / evergreen offer text (or lower-third), and a defined **window region** with rounded border + soft shadow where the face goes.
 2. ffmpeg: scale the iPad clip to the window, apply rounded corners (alpha mask) + drop shadow, `overlay` at the window position over the branded stage, keep his audio. Conform to the master-format contract (§12.1).
-Reuses the deck engine for branding + ffmpeg for the inset — on-brand, and RAM-trivial (short segment, per-segment streaming per §9a).
+Reuses the deck engine for branding + ffmpeg for the inset — on-brand, and RAM-trivial (short segment, per-segment streaming per §12.3).
 
 **Background options.** The 80% PiP window needs **no background removal** (his whole iPad frame sits in the window). For a *cutout* look (real room replaced entirely): shoot against a **green screen** → ffmpeg `chromakey`+`despill` (available now), or AI video matting (**Robust Video Matting** / `rembg` / `backgroundremover`, installable via `brew`/`pip`) for no-green-screen. Optional, later.
 
@@ -360,8 +361,8 @@ The 20-min master publishes 16:9 to **YouTube only** (LinkedIn dropped, D1a — 
 
 - **Channel (D1a):** the operator's personal YouTube channel (Blotato account ID in the private FWF instance config) — into a **new dedicated deep-dive series playlist**, created once and kept separate from any existing short-content playlist. (Not the unrelated CIRCUMVENT channel.)
 - **Hardened large-file upload:** a 20–30 min master is ~1.2–1.5 GB. Budget the master bitrate/size to a known ceiling (a CRF master encode of the concat result rather than copying through high-bitrate segments); request the presigned URL **immediately before** upload (minimize TTL burn); use `curl` with `--connect-timeout/--max-time` and resumable `-C -` where supported; **verify uploaded object size** via `get_post_status`/`source_status` before `create_post`. On retry-exhaustion, persist a **`ready-but-upload-failed`** state so a failed upload never forces a re-render.
-- **YouTube post:** title (chosen variant), description = **outcome-promise hook (keyword-first 2 lines) + chapters + sourced links (from wiki facts) + the live offer figures for the book/The Build + seeded pinned comment**; `playlistIds` = the new series playlist (+ subject-derived series later); thumbnail = the packaged asset.
-- **Synthetic-media disclosure:** now **per-program with documented rationale**. With operator-voiced acts *and* interstitials (D2), the only AI element is assisted graphics; **verify YouTube's 2026 threshold** — likely no realistic-synthetic-voice disclosure required — rather than hard-coding `true` and paying an unneeded discoverability tax. Disclose honestly if actually required.
+- **YouTube post:** title (chosen variant), description = **outcome-promise hook (keyword-first 2 lines) + chapters + sourced links (from the brain's sources) + the live offer figures for the book/The Build + seeded pinned comment**; `playlistIds` = the new series playlist (+ subject-derived series later); thumbnail = the packaged asset.
+- **Synthetic-media disclosure:** now **per-program with documented rationale**. With operator-narrated acts and **face-cam** interstitials (D2/D6) there's no synthetic voice or likeness — the only AI element is assisted graphics; **verify YouTube's 2026 threshold** — likely no realistic-synthetic-voice disclosure required — rather than hard-coding `true` and paying an unneeded discoverability tax. Disclose honestly if actually required.
 - **End screens / cards / subscribe-watermark:** reserve the CTA segment's runtime (≥20s, mostly static) as an end-screen canvas. Investigate whether Blotato exposes end-screen/card config; if not, emit a **manual checklist** in `publish-log.md` rather than silently dropping these long-form session-time tools.
 - **Integrity:** re-verify account IDs via `blotato_list_accounts`; **capture and persist the real returned YouTube URL** before scheduling promos; **never fabricate a URL**; ≤2× retry on transient media-fetch errors without duplicating.
 
@@ -390,12 +391,12 @@ A dedicated **YouTube Shorts** cut of the best snippet (Shorts→long-form is a 
 ---
 
 ## 15. Captions, chapters & accessibility
-Per-segment captions are free from forced alignment; the master sidecar is the offset-stitched result (§12.4). Chapters (§12.5) are appended to the YouTube description and can seed the LinkedIn caption TOC. Long-form caption style = 1–2 line bottom (manifest field).
+Per-segment captions are free from forced alignment; the master sidecar is the offset-stitched result (§12.4). Chapters (§12.5) are appended to the YouTube description. Long-form caption style = 1–2 line bottom (manifest field).
 
 ---
 
 ## 16. Observability & operations
-- **`build-log.jsonl`** (append-only, per program): `{stage, segment, start, end, duration, peak_rss, exit, message}` — diagnostics for failures (incl. OOM) and real data to tune the RAM-bound concurrency cap (§9a rule moved into §12).
+- **`build-log.jsonl`** (append-only, per program): `{stage, segment, start, end, duration, peak_rss, exit, message}` — diagnostics for failures (incl. OOM) and real data to tune the RAM-bound concurrency cap (§12).
 - **`/deepdive status <slug>` (a.k.a. `doctor`):** prints the manifest as a readable "done / blocked / next action" checklist + any manifest-vs-disk drift; the most-used day-to-day command.
 - **Heartbeat/lock per stage** so an interrupted stage is detectable as "crashed mid-stage."
 - **Program template/clone:** scaffold a new deep-dive from a prior arc's structure so the arc library feeds future planning.
@@ -441,8 +442,8 @@ A single source of truth at `deep-dive/brand/` (`brand.json` + `brand.md`) read 
 
 ```
 /deepdive (| <topic> | --plan <doc> | --resume <slug>)
-  1. INTAKE       topic direct or from planning doc (cross-checked vs subjects/)
-  2. RESEARCH     library-first → WebSearch → wiki facts; talktime voice; shot list → promote to library
+  1. INTAKE       topic direct or from the content guide (cross-checked vs the brain's covered topics)
+  2. RESEARCH     library-first → WebSearch → sourced facts; talktime voice; shot list → promote to brain
   3. PLAN         throughline spine + open-loops/payoffs + act-balance + editorial rubric (gate 1) → manifest
   4. RECORD LOOP  per ~90s sub-segment: record → align(gate) → render → REVIEW(approve/reject+notes) → pause
   5. INTERSTITIALS ensure FWF/The Build/CTA are recorded-once + integrity-verified (reused)

@@ -12,7 +12,7 @@
 
 A higher-level video generator for **long-form (20+ minute) deep-dive, tutorial-style videos** for the **Founders Who Finish (FWF)** founder/builder audience, built on top of the existing `explainer` rendering engine. Deep-dives are **human-narrated by the operator**, structured as a **three-act "play"** with self-sponsor breaks between acts, and assembled from independently-recorded segments so the operator records **interactively, sub-segment by sub-segment, instead of in one marathon session**.
 
-The product's job: take a topic (or inspire one from a content-planning document), research it (library-first), draft a three-act script in the operator's voice with a designed retention spine, walk the operator through staged voiceover recording and review, build a highly graphical 16:9 film with McKinsey-grade information design blending web screenshots and branded visuals, splice in reusable operator-voiced interstitials and CTA, publish to the operator's YouTube channel via Blotato, and promote it with short native snippets across X, TikTok, Instagram, and Threads.
+The product's job: take a topic (or inspire one from a content-planning document), research it (library-first), draft a three-act script in the operator's voice with a designed retention spine, walk the operator through staged voiceover recording and review, build a highly graphical 16:9 film with McKinsey-grade information design blending web screenshots and branded visuals, splice in reusable operator-recorded interstitials (face-cam sponsors) and CTA, publish to the operator's YouTube channel via Blotato, and promote it with short native snippets across X, TikTok, Instagram, and Threads.
 
 > **Concrete FWF instance values** (Blotato account/channel IDs, sponsor specifics, theme, music) live in a **private brand config** at `~/.claude/explainer-brands/dave-byline/deep-dive-instance-config.md` — deliberately kept out of this public repo.
 
@@ -26,12 +26,12 @@ The product's job: take a topic (or inspire one from a content-planning document
 |---|---|
 | D1 | **Brand = Founders Who Finish**, fully decoupled from CIRCUMVENT — real FWF theme (purple/indigo/Montserrat), D-rocket + @davesaunders anchors. |
 | D1a | **YouTube = the operator's personal channel + a new dedicated deep-dive series playlist** (account/playlist IDs in the private FWF config). **LinkedIn dropped.** |
-| D2 | **Sponsor reads + CTA are operator-voiced, recorded once** (not TTS) — reusable, version-pinned. |
+| D2 | **Sponsor reads + CTA are operator-recorded, recorded once** (not TTS) — reusable, version-pinned. (Sponsors upgraded to face-cam video by D6.) |
 | D3 | **Promo = short native snippets (<2 min) on X + TikTok + Instagram + Threads** (Blotato), pointing to YouTube. Core to V1 (the film exceeds X's 2-min cap). Deep-dive itself stays 16:9 long-form. |
 | D4 | **Central library = the shared `make_money/brain` cb vault** (resolved) — one content brain across FWF / personal / deep-dives / MedTech Monday / Founder Tip Tuesday / carousels. Per-video research promotes up via `cb intake`. |
 | D5 | **Deck/visual layer = McKinsey-grade information design**, adapted to FWF + motion (action titles, one-message slides, disciplined data-viz). Use the `mckinsey-presentations` skill's standards. |
 | D6 | **Sponsor interstitials = iPad face-to-camera video**, composited ~80% (PiP) on the FWF branded background; recorded once, version-pinned. ffmpeg compositing, no new tools. CTA optionally face-cam. |
-| D7 | **Adobe Stock** (operator subscription) — licensed photo + video B-roll; shot list proposes search prompts; catalog tracks asset ID + license. |
+| D7 | **Adobe Stock** (operator subscription) — licensed photo + video B-roll; shot list proposes search prompts; the brain (source node + `_attachments`) tracks asset ID + license. |
 | D8 | **YouTube competitive research at project start** — top videos' titles/descriptions/transcripts via WebSearch + `yt-dlp`; reverse-engineer what works → informs angle, titles, thumbnails. |
 | D9 | **Teach toward a transformative outcome** — every deep-dive declares the viewer benefit; headline sells the transformation, not the topic. |
 | D10 | **Custom YouTube thumbnail** — default on-brand composite (FWF template + keyword text + operator selfie corner); optional AI via the operator's nano-banana/Gemini API or interactive handoff; uploaded as Blotato custom thumbnail. |
@@ -43,7 +43,7 @@ The product's job: take a topic (or inspire one from a content-planning document
 ### Goals
 - G1 — Polished **20+ minute, 16:9** deep-dives with **operator voiceover**, FWF-branded.
 - G2 — **Staged, interactive recording**: a series of voiceover prompts recorded over one or more sessions, at ~60–90s sub-segment granularity, with per-sub-segment review/approve.
-- G3 — **Three-act structure** with operator-voiced self-sponsor breaks at the seams: Act I → *Founders Who Finish* → Act II → *The Build* → Act III → like/subscribe.
+- G3 — **Three-act structure** with operator-recorded (face-cam) self-sponsor breaks at the seams: Act I → *Founders Who Finish* → Act II → *The Build* → Act III → like/subscribe.
 - G4 — **Retention-engineered**: cold open, planted/paid-off open loops, re-hook cadence, pre-sponsor teases, whole-film review — not just structure.
 - G5 — **Highly graphical**: web screenshots/images + branded graphics, with attribution + tracked rights.
 - G6 — **Minimal recurring effort**: interstitials + CTA recorded once and reused; only act content per video.
@@ -52,7 +52,7 @@ The product's job: take a topic (or inspire one from a content-planning document
 - G9 — **Resumable, crash-safe** builds across days; stop after any sub-segment, resume with no lost state.
 
 ### Non-goals
-- N1 — The deep-dive itself is **16:9 long-form only**; no vertical *deliverable*. *(Derived 9:16 promo clips are a planned future module — D3/§Phase 3.5 — not part of the long-form deliverable.)*
+- N1 — The deep-dive *itself* is **16:9 long-form only**; no vertical *deliverable*. *(Derived <2-min vertical promo snippets ARE a core output for distribution — §14 / Phase 3 — but they're promo, not the long-form film.)*
 - N2 — No fully-unattended generation. **Operator-in-the-loop** by design (human VO, per-sub-segment review, whole-film review).
 - N3 — Not related to / not a replacement for the CIRCUMVENT short-form routine; entirely separate.
 - N4 — **This phase delivers design docs only.** No code yet.
@@ -98,8 +98,8 @@ The product's job: take a topic (or inspire one from a content-planning document
 
 ### 6.2 Research & knowledge library
 - FR-3 — **Library-first**: query existing sources/facts/assets before new research.
-- FR-4 — Web research (WebSearch/WebFetch); every claim a sourced `wiki fact` (no unsourced claims). Reddit/LinkedIn/Substack MCP for audience research.
-- FR-4b — **YouTube competitive scan (D8)**: find top-performing videos on the topic (WebSearch) and pull title/description/view-count/auto-transcript via `yt-dlp --skip-download`; analyze why they work; output a "what's working / gaps to beat" brief feeding angle, titles, and thumbnails. Store as `competitor-video` nodes.
+- FR-4 — Web research (WebSearch/WebFetch); every claim a sourced fact, no unsourced claims (staged locally, promoted to the brain as a cb `fact`). Reddit/LinkedIn/Substack MCP for audience research.
+- FR-4b — **YouTube competitive scan (D8)**: find top-performing videos on the topic (WebSearch) and pull title/description/view-count/auto-transcript via `yt-dlp --skip-download`; analyze why they work; output a "what's working / gaps to beat" brief feeding angle, titles, and thumbnails. Store as `source` nodes (web-snapshot/skill-output) in the brain.
 - FR-5 — Draft scripts in the operator's voice via `talktime` (per-program tag).
 - FR-6 — Produce a **visual shot list**: per beat, choose branded graphic, web asset, or **Adobe Stock** photo/video (D7) — each with source + attribution + rights status. For Adobe Stock, emit **suggested search prompts** (keywords + beat + photo/video) for the operator to review and download from their subscription.
 - FR-7 — Use the **shared `make_money/brain` cb vault** as the central knowledge brain (sources, facts, concepts/frameworks, patterns, the 6 personas, produced-piece source nodes, assets with license/rights). `cb maintain` handles dedup + confidence decay + index; `cb query` for retrieval.
@@ -122,9 +122,9 @@ The product's job: take a topic (or inspire one from a content-planning document
 
 ### 6.5 Visual aids
 - FR-19 — Blend **branded graphics**, **auto-fetched web images/screenshots** (`ingest --url`/`--pdf`), and **licensed Adobe Stock** photo + video B-roll (D7). Stock video B-roll is composited (cutaway/background/inset) via the framing layer (FR-21b).
-- FR-20 — On-screen **attribution**; **rights status** tracked in the asset catalog and carried forward on reuse; flag doubtful-rights assets for approval.
+- FR-20 — On-screen **attribution**; **rights status** tracked on the asset's brain record (`source` node + `_attachments`) and carried forward on reuse; flag doubtful-rights assets for approval.
 
-### 6.6 Interstitials & CTA (operator-voiced, reusable)
+### 6.6 Interstitials & CTA (operator-recorded face-cam, reusable)
 - FR-21 — Record the two sponsor interstitials **once as iPad face-to-camera video** (D6), composited ~80% (PiP) on the FWF branded background; version-pinned, reused on every deep-dive. CTA optionally face-cam or operator-voiced.
 - FR-21b — **Compositing & framing layer** (ffmpeg 8.1.1, already installed): talking-head PiP onto the branded stage (deck-rendered frame + ffmpeg inset, rounded corners + shadow), stock-video compositing, optional green-screen `chromakey` or AI matting (brew/pip) for a cutout look. No NLE required. (Architecture §12.7.)
 - FR-22 — **Registry integrity**: per version store mp4 path, content hash, ffprobe format, structured offer facts + verified flag; assembly verifies existence + hash + format-contract conformance before concat; never mutate a published version in place.
@@ -140,14 +140,14 @@ The product's job: take a topic (or inspire one from a content-planning document
 - FR-28 — Enforce a **versioned master-format contract** (h264 High@L4.0, yuv420p, 1920×1080, SAR 1:1, CFR fps, bt709/tv, AAC-LC 48 kHz **stereo**, faststart); `assemble --check` preflight + per-segment conform re-encode on any mismatch.
 - FR-29 — Concatenate via **concat demuxer + stream copy**; any forced re-encode is per-segment/streaming; never a whole-film filtergraph.
 - FR-30 — Derive all timing from **ffprobe** on conformed segments; stitch captions by frame-exact offsets (no-caption interstitials still advance the accumulator).
-- FR-31 — Emit **chapters** (forward-hook titles) and a **packaging step (D10)**: 3–5 **benefit-forward title variants** (informed by FR-4b) + a **custom thumbnail** — default an on-brand composite (FWF template + 3–5-word keyword text + operator selfie corner, background optionally removed); optional AI hero via the operator's nano-banana/Gemini API or interactive handoff; uploaded as the Blotato custom thumbnail. Record chosen packaging in the arc node.
+- FR-31 — Emit **chapters** (forward-hook titles) and a **packaging step (D10)**: 3–5 **benefit-forward title variants** (informed by FR-4b) + a **custom thumbnail** — default an on-brand composite (FWF template + 3–5-word keyword text + operator selfie corner, background optionally removed); optional AI hero via the operator's nano-banana/Gemini API or interactive handoff; uploaded as the Blotato custom thumbnail. Record chosen packaging in the brain (arc record).
 - FR-32 — **Master-integrity validation** (duration == Σ segments; last caption ≤ master; chapters monotonic; audio continuous across seams) + optional **dry-run assembly** + **disk-budget guard**.
 
 ### 6.9 Publishing
 - FR-33 — Publish to **the operator's YouTube channel** + a **new dedicated deep-dive series playlist** (concrete account/playlist IDs in the private FWF config, not this repo; not the unrelated CIRCUMVENT channel), with chosen title, description (keyword-first hook + chapters + sourced links + live book/The Build offer figures + seeded pinned comment), packaged thumbnail.
 - FR-34 — **LinkedIn dropped** (D1a) — 20-min native video underperforms there; revisit later if desired.
 - FR-35 — **Hardened large-file upload**: master bitrate/size budget; just-in-time presigned URL; resumable PUT + timeouts; verify uploaded size before `create_post`; persistent **`ready-but-upload-failed`** state.
-- FR-36 — **Synthetic-media disclosure is per-program with documented rationale**; verify YouTube's 2026 threshold rather than hard-coding `true` (operator-voiced acts + interstitials = minimal synthetic content).
+- FR-36 — **Synthetic-media disclosure is per-program with documented rationale**; verify YouTube's 2026 threshold rather than hard-coding `true` (operator-narrated acts + face-cam interstitials = no synthetic voice/likeness; minimal synthetic content).
 - FR-37 — **End screens / cards / subscribe-watermark**: reserve CTA runtime as a canvas; set via Blotato if supported, else a manual checklist in `publish-log.md`.
 - FR-38 — **Capture & persist the real returned YouTube URL**; never fabricate; re-verify accounts; ≤2× retry without duplicating.
 
@@ -182,12 +182,12 @@ Intake → library-first Research → 3-Act Plan + retention spine (rubric gate 
 ## 8. Success criteria
 - SC-1 — Operator produces a complete deep-dive recording **no more than a few ~90s sub-segments per sitting**; re-records are sub-segment-sized.
 - SC-2 — Re-recording one sub-segment doesn't touch its neighbors; builds resume cleanly across days from a crash-safe manifest.
-- SC-3 — Interstitials + CTA require **zero per-video recording** and stay consistent (operator voice).
+- SC-3 — Interstitials + CTA require **zero per-video recording** and stay consistent (operator's face + voice).
 - SC-4 — The published YouTube video has working **chapters**, a stitched caption track, a **packaged thumbnail/title**, and correct FWF branding.
 - SC-5 — Master assembles at ~one-segment RAM cost regardless of length; assembly passes master-integrity validation.
 - SC-6 — Audience retention is *designed*: cold open + ≥2 planted-and-paid-off open loops + pre-sponsor teases, verified at whole-film review.
 - SC-7 — 3–6 short native snippets scheduled across X/TikTok/IG/Threads, each pointing at the **real** returned YouTube URL, distinct angles, pinned anchor on X.
-- SC-8 — The knowledge library **compounds**: later videos demonstrably reuse prior sources/facts/assets (content-hash dedup); no duplicate research or re-captured approved assets.
+- SC-8 — The shared brain **compounds**: later videos (and other formats) demonstrably reuse prior sources/facts/assets (cb dedup); no duplicate research or re-captured approved assets.
 
 ---
 
@@ -202,7 +202,7 @@ Intake → library-first Research → 3-Act Plan + retention spine (rubric gate 
 
 **Resolved this round:** YouTube = operator's channel + new series playlist · LinkedIn dropped · FWF theme = adapt the kit + McKinsey info-design · X self-reply confirmed, promo = native snippets on X/TikTok/IG/Threads · logo/book-cover asset paths known. *(Concrete IDs in the private FWF config.)*
 
-**Resolved this round:** book URL `davesaunders.net/book` · The Build URL `davesaunders.net/free-trial` · The Build offer **$14.95 to start, then $79/mo, plus $1,500+ in free bonuses** (→ YouTube description, not baked) · music supplied + Pixabay-licensed (logo + two act beds) · **X Premium = yes**.
+**Also resolved:** book URL `davesaunders.net/book` · The Build URL `davesaunders.net/free-trial` · The Build offer **$14.95 to start, then $79/mo, plus $1,500+ in free bonuses** (→ YouTube description, not baked) · music supplied + Pixabay-licensed (logo + two act beds) · **X Premium = yes** · sponsor interstitials = face-cam video (D6).
 
 **Still needed:**
 1. **Content guide — PROVIDED** (in the byline library: `editorial_thesis.md` + `content_workbook.md` + `research_sources.md`). Deep-dive topic selection draws from the thesis archetypes, The Build's theme calendar, the named frameworks, the research roster, and the YouTube competitive scan. The deep-dive's own "Part II" (format application of the thesis) is a **build task**, not an input still owed. *(First topic already chosen: pitch deck.)*
