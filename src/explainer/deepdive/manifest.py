@@ -179,14 +179,46 @@ def segment_mp4(program, seg_id, manifest):
     return program.project_dir(seg_id) / "video" / "explainer_16x9.mp4"
 
 
+def sync_from_program(program, manifest) -> bool:
+    """Bring the manifest's order + segment set in line with `program.json` (the intent file): add
+    newly-listed segments as `planned`, refresh kind/registry_ref, drop removed ones — while
+    PRESERVING the lifecycle status of segments that remain. This is what makes editing
+    `program.json` (e.g. expanding an act into sub-segments) propagate to the crash-safe manifest.
+    Returns True if anything changed."""
+    changed = False
+    desired = list(program.order)
+    if manifest.get("order") != desired:
+        manifest["order"], changed = desired, True
+    segs = manifest.setdefault("segments", {})
+    for sid in desired:
+        spec = program.segment(sid)
+        kind = spec.get("kind", "act")
+        if sid not in segs:
+            segs[sid] = {"kind": kind, "status": "planned", "review_status": None,
+                         "review_notes": "", "source_hash": None, "owner_pid": None, "heartbeat": None}
+            if kind == "interstitial":
+                segs[sid]["registry_ref"] = spec.get("registry_ref")
+            changed = True
+        else:
+            if segs[sid].get("kind") != kind:
+                segs[sid]["kind"], changed = kind, True
+            if kind == "interstitial" and segs[sid].get("registry_ref") != spec.get("registry_ref"):
+                segs[sid]["registry_ref"], changed = spec.get("registry_ref"), True
+    for sid in [s for s in segs if s not in desired]:  # drop segments no longer in the order
+        del segs[sid]
+        changed = True
+    return changed
+
+
 def reconcile(program, manifest) -> dict:
-    """Validate manifest against disk (resume safety). Bidirectional:
+    """Sync the manifest to program.json (sync_from_program), then validate against disk. Bidirectional:
       - a `planned`/`scripted`/`recorded` segment whose MP4 exists is PROMOTED (rendered, or
         `ready` for interstitials) — work the manifest didn't record;
       - a `>= rendered` claim whose MP4 is missing is DEMOTED to `planned`;
       - a segment with a dead owner_pid mid-work is marked `failed` (crashed).
     Returns a drift report; writes the manifest iff anything changed."""
-    drift, changed = [], False
+    drift = []
+    changed = sync_from_program(program, manifest)
     for sid, seg in manifest["segments"].items():
         mp4 = segment_mp4(program, sid, manifest)
         present = bool(mp4 and Path(mp4).exists())
