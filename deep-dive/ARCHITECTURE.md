@@ -1,6 +1,12 @@
 # Deep-Dive Video Generator — Architecture Document (v2, post-council)
 
-**Status:** Draft for review (architecture only — no code yet)
+> **✅ IMPLEMENTED & MERGED (2026-06-07).** This architecture is no longer "no code yet" — Phase 1
+> + all of Phase 2 are built and merged to `main` (PRs #9–#14): `deepdive` CLI, the
+> `src/explainer/deepdive/` package, the live **`/deepdive` skill**. Read this for the design
+> rationale; to USE it, invoke **`/deepdive`**. (Only Dave's real face-cam interstitials + Phase 3
+> publishing remain unbuilt.)
+
+**Status:** Implemented (Phase 1–2 merged). *(Originally: draft for review, architecture only — no code yet.)*
 **Revision:** v2 — incorporates the council review (2026-06-04/05) and four locked product decisions.
 **Companion doc:** [`PRD.md`](PRD.md)
 **Lives in:** `/Volumes/Casima/claudeCode/explainer-system/deep-dive/` — a higher-level capability of the **explainer system**, built on the same engine (`/Users/davesaunders/myenv/bin/explainer`) as the short-form explainers.

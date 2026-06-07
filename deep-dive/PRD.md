@@ -1,6 +1,11 @@
 # Deep-Dive Video Generator — Product Requirements Document (PRD, v2)
 
-**Status:** Draft for review
+> **✅ IMPLEMENTED & MERGED (2026-06-07).** Phase 1 + all of Phase 2 are built and merged to `main`
+> (PRs #9–#14): `deepdive` CLI + `src/explainer/deepdive/` + the live **`/deepdive` skill**. This
+> PRD is the design reference; to USE the system, invoke **`/deepdive`**. Only Dave's real face-cam
+> interstitials (TTS placeholders stand in) and Phase 3 publishing remain.
+
+**Status:** Implemented (Phase 1–2 merged). *(Originally: draft for review.)*
 **Revision:** v2 — incorporates the council review (2026-06-04/05) and four locked product decisions.
 **Companion doc:** [`ARCHITECTURE.md`](ARCHITECTURE.md)
 **Lives in:** `/Volumes/Casima/claudeCode/explainer-system/deep-dive/` (a capability of the explainer system)

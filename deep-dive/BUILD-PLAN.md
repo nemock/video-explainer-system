@@ -1,6 +1,13 @@
 # Deep-Dive — Phase 1 Build Plan (groundwork)
 
-**Status:** Phase 1 kickoff. Design is frozen + consistency-reviewed (ARCHITECTURE.md, PRD.md; 7 PRs merged). This is the first *code* phase.
+> **✅ STATUS: BUILT & MERGED (2026-06-07). This plan is historical/reference.** Phase 1 **and**
+> all of Phase 2 are coded, tested, and merged to `main` (PRs #9–#14): the `deepdive` CLI, the
+> `src/explainer/deepdive/` package, and the live **`/deepdive` skill**. To make a deep-dive,
+> invoke **`/deepdive <topic>`** (or `deepdive new …`) — do **not** treat this as unstarted.
+> Only un-built pieces: Dave's real face-cam sponsor interstitials (TTS placeholders stand in)
+> and Phase 3 publishing.
+
+**Status (historical):** Phase 1 kickoff. Design is frozen + consistency-reviewed (ARCHITECTURE.md, PRD.md; 7 PRs merged). This was the first *code* phase.
 **Run from:** a session rooted at `/Volumes/Casima/claudeCode/explainer-system` (the engine repo). The `make_money/brain` cb vault and both CLIs (`cb`, `explainer`) resolve from there.
 **Owner key:** 🤖 = Claude builds · 🧑 = Dave does (physical/creative).
 
