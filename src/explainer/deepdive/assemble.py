@@ -9,7 +9,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from . import audio, captions, chapters, conform, interstitials, manifest as mf
+from . import audio, buildlog, captions, chapters, conform, interstitials, manifest as mf
 
 
 def _sources(program, manifest):
@@ -120,18 +120,20 @@ def run(program, *, dry_run=False):
     for i, s in enumerate(sources):
         dst = cdir / f"{i:02d}_{s['id']}.mp4"
         # loudnorm every segment (incl. interstitials) so the master's seams are level-matched.
-        actions.append(conform.conform_segment(s["src"], dst, fps=program.fps, loudnorm=True))
+        with buildlog.timed(program, "conform", s["id"]):
+            actions.append(conform.conform_segment(s["src"], dst, fps=program.fps, loudnorm=True))
         conformed.append(dst)
 
     # concat demuxer + stream copy (RAM-safe; conformed are CONTRACT-identical so -c copy is valid)
     listfile = program.scratch_dir / "concat.txt"
     listfile.write_text("".join(f"file '{c.resolve()}'\n" for c in conformed))
     master = program.master_dir / "deepdive_16x9.mp4"
-    r = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-f", "concat",
-                        "-safe", "0", "-i", str(listfile), "-c", "copy", "-movflags", "+faststart",
-                        str(master)], capture_output=True, text=True)
-    if r.returncode != 0:
-        raise RuntimeError("concat failed:\n" + r.stderr[-1500:])
+    with buildlog.timed(program, "concat"):
+        r = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-f", "concat",
+                            "-safe", "0", "-i", str(listfile), "-c", "copy", "-movflags", "+faststart",
+                            str(master)], capture_output=True, text=True)
+        if r.returncode != 0:
+            raise RuntimeError("concat failed:\n" + r.stderr[-1500:])
 
     # caption stitch + chapters (ffprobe-exact offsets off the CONFORMED segments)
     cap = captions.stitch(conformed, [s["srt"] for s in sources],
@@ -143,12 +145,17 @@ def run(program, *, dry_run=False):
               "conform_actions": [a["action"] for a in actions],
               "captions": cap, "chapters": chap, "validation": validation,
               "duration_s": validation["checks"]["duration_match"]["master_s"]}
+    # reconcile (run above) has promoted rendered/ready segments; mark them assembled (journaled).
+    if validation["ok"]:
+        for s in sources:
+            st = manifest["segments"][s["id"]]["status"]
+            if st in ("rendered", "ready", "approved"):
+                mf.transition(program, manifest, s["id"], "assembled", force=True, write_now=False)
     manifest["assembly"] = {"status": "assembled" if validation["ok"] else "failed",
                             "master": str(master), "validated": validation["ok"], "report": report}
-    for s in sources:
-        if manifest["segments"][s["id"]]["status"] in ("planned", "rendered", "approved"):
-            manifest["segments"][s["id"]]["status"] = "assembled"
     mf.write(program, manifest)
+    buildlog.emit(program, stage="assemble", exit=0 if validation["ok"] else 2,
+                  message=f"master {report['duration_s']}s, validated={validation['ok']}")
     return report
 
 

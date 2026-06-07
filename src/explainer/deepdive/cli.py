@@ -9,7 +9,7 @@ from datetime import date
 from pathlib import Path
 
 from .program import Program, CANONICAL_ORDER
-from . import assemble, manifest as mf, interstitials
+from . import assemble, manifest as mf, doctor
 
 
 def _slug(s):
@@ -52,14 +52,16 @@ def cmd_assemble(args):
 
 
 def cmd_status(args):
-    prog = Program.load(args.program_dir)
-    manifest = mf.load(prog)
-    drift = mf.reconcile(prog, manifest)
-    rows = [{"id": sid, "kind": s.get("kind"), "status": s["status"],
-             "review": s.get("review_status")} for sid, s in manifest["segments"].items()]
-    print(json.dumps({"program": manifest["program"]["slug"],
-                      "assembly": manifest["assembly"]["status"],
-                      "segments": rows, "drift": drift}, indent=2))
+    rep = doctor.report(Program.load(args.program_dir))
+    print(json.dumps({"program": rep["program"], "assembly": rep["assembly"],
+                      "segments": [{"id": s["id"], "status": s["status"]} for s in rep["segments"]],
+                      "drift_ok": rep["drift"]["ok"]}, indent=2))
+
+
+def cmd_doctor(args):
+    rep = doctor.report(Program.load(args.program_dir))
+    print(json.dumps(rep, indent=2))
+    return 0 if rep["drift"]["ok"] else 1
 
 
 def main(argv=None):
@@ -79,9 +81,13 @@ def main(argv=None):
     a.add_argument("--dry-run", action="store_true", help="ordered plan + chapter preview, no encode")
     a.set_defaults(func=cmd_assemble)
 
-    s = sub.add_parser("status", help="manifest-vs-disk status of a program")
+    s = sub.add_parser("status", help="concise manifest-vs-disk status of a program")
     s.add_argument("program_dir")
     s.set_defaults(func=cmd_status)
+
+    dr = sub.add_parser("doctor", help="full health check: lifecycle checklist + drift + next actions")
+    dr.add_argument("program_dir")
+    dr.set_defaults(func=cmd_doctor)
 
     args = p.parse_args(argv)
     return args.func(args) or 0
