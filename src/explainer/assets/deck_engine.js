@@ -78,9 +78,14 @@
     el.className = 'slide'; el.dataset.id = s.id; el.dataset.type = s.type;
     var html = '';
     if (s.kicker) html += '<div class="kicker">' + s.kicker + '</div>';
+    // McKinsey action/"so-what" title pinned at top (the message; the visual below proves it).
+    // Accent words use the same accent/accent2 lists, so the insight word reads in indigo.
+    if (s.title) html += '<div class="slidetitle' + (s.title.length > 48 ? ' sm' : '') + '">' +
+      headlineHTML(s.title, s.accent, s.accent2) + '</div>';
     if (s.type === 'diagram') {
       html += '<div class="bars">' + (s.bars || []).map(function (b) {
-        return '<div class="barcol"><div class="bar ' + (b.kind === 'bad' ? 'bad' : '') +
+        var bk = b.kind === 'muted' ? 'muted' : (b.kind === 'bad' ? 'bad' : '');
+        return '<div class="barcol"><div class="bar ' + bk +
           '" data-val="' + (b.value || 0) + '"></div><div class="barlabel">' + (b.label || '') + '</div></div>';
       }).join('') + '</div>';
     } else if (s.type === 'stat') {
@@ -138,9 +143,11 @@
       if (s.label) html += '<div class="statlabel">' + s.label + '</div>';
     } else if (s.type === 'ranked') {
       html += '<div class="ranked">' + (s.bars || []).map(function (b) {
-        return '<div class="rankrow"><div class="ranktop"><span class="ranklabel">' + (b.label || '') + '</span>' +
+        var rbk = b.kind === 'muted' ? 'muted' : (b.kind === 'bad' ? 'bad' : '');
+        return '<div class="rankrow' + (b.kind === 'muted' ? ' muted' : '') + '"><div class="ranktop">' +
+          '<span class="ranklabel">' + (b.label || '') + '</span>' +
           (b.display ? '<span class="rankval">' + b.display + '</span>' : '') + '</div>' +
-          '<div class="ranktrack"><div class="rankbar ' + (b.kind === 'bad' ? 'bad' : '') +
+          '<div class="ranktrack"><div class="rankbar ' + rbk +
           '" data-val="' + (b.value || 0) + '"></div></div></div>';
       }).join('') + '</div>';
     } else if (s.type === 'delta') {
@@ -243,6 +250,8 @@
       html += '<div class="' + cls + '">' + headlineHTML(s.headline || '', s.accent, s.accent2) + '</div>';
     }
     if (s.subkicker) html += '<div class="subkicker">' + s.subkicker + '</div>';
+    // sourced data-viz: a small citation pinned bottom-left (no chart-junk, just provenance).
+    if (s.source) html += '<div class="srcline">Source: ' + s.source + '</div>';
     el.innerHTML = html;
     stage.appendChild(el);
   });
@@ -431,8 +440,18 @@
         var hg = Math.max(0, easeOut((t - win.start - 0.3) / Math.min(0.8, span)));
         Array.prototype.forEach.call(el.querySelectorAll('.hl-bg'), function (bg) { bg.style.width = (hg * 100) + '%'; });
       } else if (rt === 'build') {
-        Array.prototype.forEach.call(el.querySelectorAll('.bw'), function (w, idx) {
-          var bg = Math.max(0, easeOut((t - win.start - idx * 0.07) / Math.min(0.5, span)));
+        // Motion serves comprehension (§8.6): when the build line's words map 1:1 to the
+        // forced-alignment word timings for this slide, each word appears exactly as it's
+        // spoken. Otherwise fall back to a fixed stagger from the slide start.
+        var bspans = el.querySelectorAll('.bw');
+        var bwords = el.__bwords;
+        if (bwords === undefined) {
+          var ws = tl.words.filter(function (w) { return w.slide === win.id; });
+          el.__bwords = bwords = (ws.length === bspans.length) ? ws : null;
+        }
+        Array.prototype.forEach.call(bspans, function (w, idx) {
+          var startT = bwords ? bwords[idx].start : (win.start + idx * 0.07);
+          var bg = Math.max(0, easeOut((t - startT) / 0.32));
           w.style.opacity = bg;
           w.style.transform = 'translateY(' + ((1 - bg) * 18).toFixed(1) + 'px) scale(' + (0.85 + 0.15 * bg) + ')';
         });

@@ -9,7 +9,7 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--fg);
 /* Display (serif) face — used only when a theme declares `fonts` (e.g. founder = Fraunces);
    otherwise --font-display is unset and these inherit the body font, i.e. unchanged. */
 .headline, .statnum, .progresspct, .quotetext, .cmpval, .steptitle,
-.delta-val, .ring-pct, .trend-end, .def-term, .punch { font-family: var(--font-display, inherit); }
+.delta-val, .ring-pct, .trend-end, .def-term, .punch, .slidetitle { font-family: var(--font-display, inherit); }
 
 /* ambient: a faint, slowly drifting glow so the frame is never fully static
    (continuous motion -> better perceived liveliness + no QA dead air). */
@@ -248,3 +248,69 @@ html, body { width: 100%; height: 100%; background: var(--bg); color: var(--fg);
 .def-term { font-size: 112px; font-weight: 900; color: var(--accent); line-height: 1.04; }
 .def-term.sm { font-size: 78px; }
 .def-body { font-size: 48px; line-height: 1.3; opacity: 0; margin-top: 30px; will-change: opacity, transform; }
+
+/* ============================================================
+   McKinsey-grade chrome (theme-agnostic, ARCHITECTURE §8.6):
+   an action/"so-what" TITLE pinned top, a SOURCE line pinned
+   bottom, and a `muted` data-viz state so the one insight bar
+   reads in accent while the rest recede. The chart/stat stays
+   centered (these are absolutely positioned, out of flow).
+   ============================================================ */
+.slidetitle { position: absolute; top: 84px; left: 90px; right: 90px; z-index: 2;
+  font-size: 60px; font-weight: 800; line-height: 1.12; text-align: center; }
+.slidetitle.sm { font-size: 46px; }
+.srcline { position: absolute; bottom: 38px; left: 90px; right: 90px; z-index: 2;
+  font-size: 26px; line-height: 1.25; opacity: .5; text-align: left; }
+/* data-viz pre-highlight: non-insight bars recede to a neutral track tone, their
+   label/value dim, so the single accent (insight) bar carries the eye. */
+.bar.muted { background: var(--hair-strong); }
+.rankbar.muted { background: var(--hair-strong); }
+.rankrow.muted .ranklabel { opacity: .55; }
+.rankrow.muted .rankval { opacity: .55; color: var(--fg); }
+
+/* ============================================================
+   FWF theme treatment (Founders Who Finish). Scoped to
+   [data-theme="fwf"] so no other theme is affected. Three jobs:
+   (1) condensed Archivo (real wdth axis) at FWF weights,
+   (2) flat-purple texture: static grain + radial vignette (no
+       drifting accent glow — ambient is off for fwf), and
+   (3) 16:9 long-form casing: ALL-CAPS titles/labels, sentence
+       case for dense body/quotes/captions. Still NO CSS
+       animation on captured elements (textures are static).
+   ============================================================ */
+/* condensed cut: font-stretch selects the Archivo width axis (62–125 advertised in @font-face).
+   Body/captions lightly condensed; big display lines tighter + a hair of negative tracking. */
+body[data-theme="fwf"] { font-stretch: 84%; }
+[data-theme="fwf"] .headline, [data-theme="fwf"] .punch, [data-theme="fwf"] .statnum,
+[data-theme="fwf"] .def-term, [data-theme="fwf"] .progresspct, [data-theme="fwf"] .quotetext,
+[data-theme="fwf"] .cmpval, [data-theme="fwf"] .delta-val, [data-theme="fwf"] .ring-pct,
+[data-theme="fwf"] .trend-end, [data-theme="fwf"] .slidetitle { font-stretch: 74%; letter-spacing: -.01em; }
+
+/* texture layers sit above the flat #36185B bg, below #stage content (z-index 1).
+   vignette = a cheap radial gradient (darker toward edges); grain = a tileable, fixed-seed
+   feTurbulence noise (deterministic, no per-frame re-raster). */
+body[data-theme="fwf"]::before, body[data-theme="fwf"]::after {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+body[data-theme="fwf"]::before {
+  background: radial-gradient(120% 95% at 50% 42%, transparent 52%, rgba(0,0,0,.42) 100%); }
+body[data-theme="fwf"]::after {
+  opacity: .07; mix-blend-mode: overlay; background-size: 160px 160px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+/* casing — ALL-CAPS for titles, labels, badges, short punch lines */
+[data-theme="fwf"] .kicker, [data-theme="fwf"] .headline, [data-theme="fwf"] .punch,
+[data-theme="fwf"] .reframe, [data-theme="fwf"] .buildline, [data-theme="fwf"] .subkicker,
+[data-theme="fwf"] .def-term, [data-theme="fwf"] .statlabel, [data-theme="fwf"] .barlabel,
+[data-theme="fwf"] .cmptitle, [data-theme="fwf"] .cmpval, [data-theme="fwf"] .steptitle,
+[data-theme="fwf"] .ranklabel, [data-theme="fwf"] .rankval, [data-theme="fwf"] .tl-date,
+[data-theme="fwf"] .tl-evlabel, [data-theme="fwf"] .delta-lab, [data-theme="fwf"] .delta-badge,
+[data-theme="fwf"] .mx-ptlab, [data-theme="fwf"] .mx-xlo, [data-theme="fwf"] .mx-xhi,
+[data-theme="fwf"] .mx-ylo, [data-theme="fwf"] .mx-yhi, [data-theme="fwf"] .li-text,
+[data-theme="fwf"] .wf-label, [data-theme="fwf"] .quoteattr, [data-theme="fwf"] .slidetitle {
+  text-transform: uppercase; }
+/* sentence case for dense body / data / long quotes / running captions (16:9 legibility) */
+[data-theme="fwf"] .def-body, [data-theme="fwf"] .steptext, [data-theme="fwf"] .figcaption,
+[data-theme="fwf"] .quotetext, [data-theme="fwf"] #caption .w { text-transform: none; }
+/* secondary text (subtitles / footer feel) leans to the #CCCCCC tone via opacity on white */
+[data-theme="fwf"] #caption .w { color: #CCCCCC; }
+[data-theme="fwf"] #caption .w.active { color: var(--accent); }

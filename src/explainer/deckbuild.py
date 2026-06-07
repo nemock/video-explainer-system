@@ -13,8 +13,15 @@ ASSETS = Path(__file__).parent / "assets"
 FONT_FILES = {
     "Fraunces": [("normal", "fraunces-wght-normal.woff2"), ("italic", "fraunces-wght-italic.woff2")],
     "Inter": [("normal", "inter-wght-normal.woff2")],
+    # Archivo variable carries BOTH a weight and a width axis (see FONT_STRETCH) so the FWF
+    # theme can render a genuine condensed 800 via `font-stretch` in deck.css.
+    "Archivo": [("normal", "archivo-wdth-wght-normal.woff2")],
 }
-FONT_STACK = {"Fraunces": "Georgia, serif", "Inter": "-apple-system, 'Helvetica Neue', Arial, sans-serif"}
+FONT_STACK = {"Fraunces": "Georgia, serif", "Inter": "-apple-system, 'Helvetica Neue', Arial, sans-serif",
+              "Archivo": "'Helvetica Neue', Arial, sans-serif"}
+# Families with a usable width (wdth) axis: the @font-face must advertise the stretch range
+# or browsers clamp to normal and `font-stretch`/condensed becomes a no-op.
+FONT_STRETCH = {"Archivo": "62% 125%"}
 
 
 def _font_css(theme, deck_dir):
@@ -35,7 +42,8 @@ def _font_css(theme, deck_dir):
                 continue
             (deck_dir / "fonts").mkdir(parents=True, exist_ok=True)
             shutil.copy(src, deck_dir / "fonts" / fn)
-            faces.append(f"@font-face{{font-family:'{fam}';font-weight:100 900;"
+            stretch = f"font-stretch:{FONT_STRETCH[fam]};" if fam in FONT_STRETCH else ""
+            faces.append(f"@font-face{{font-family:'{fam}';font-weight:100 900;{stretch}"
                          f"font-style:{style};font-display:block;src:url('fonts/{fn}') format('woff2');}}")
             copied.add(fn)
     vars_ = []
@@ -58,9 +66,14 @@ def run(proj):
         if s.get("type") == "figure" and img and not img.startswith(("/", "../", "http")):
             s["image"] = "../" + img
     theme = proj.theme
+    # theme name drives a `data-theme` attr so a theme can carry CSS-scoped treatments
+    # (e.g. fwf: condensed font + ALL-CAPS titles + grain/vignette) without touching others.
+    theme_name = proj.data.get("theme") if isinstance(proj.data.get("theme"), str) else "custom"
     deck["motion"] = theme.get("motion", "rise")  # theme's default per-slide intro
     deck["safe_bottom"] = proj.safe_bottom         # platform safe-zone inset for captions
-    deck["ambient"] = bool(proj.data.get("ambient", True))  # drifting glow (set false for ~2x faster render)
+    # ambient drifting glow: project overrides theme default overrides global default (True).
+    # fwf sets ambient:false (flat purple, vignette only — no drifting accent gradient).
+    deck["ambient"] = bool(proj.data.get("ambient", theme.get("ambient", True)))
     # caption style: "window" (default, TikTok-style — only ~caption_window words shown at a
     # time) or "full" (legacy, whole-slide kinetic captions). Override per project via project.json.
     deck["caption_mode"] = proj.data.get("caption_mode", "window")
@@ -89,6 +102,7 @@ def run(proj):
 
     html = (base
             .replace("{{TITLE}}", str(deck.get("title", proj.data.get("title", "Explainer"))))
+            .replace("{{THEME}}", theme_name)
             .replace("{{BG}}", theme["bg"]).replace("{{FG}}", theme["fg"])
             .replace("{{ACCENT}}", theme["accent"]).replace("{{ACCENT2}}", theme["accent2"])
             .replace("{{W}}", str(w)).replace("{{H}}", str(h))
