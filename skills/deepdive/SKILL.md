@@ -46,8 +46,10 @@ Confirm the **topic + the transformative outcome** (what the viewer can DO after
 ```
 deepdive new "<slug>" --title "<benefit-forward working title>"
 ```
-Creates `deep-dive/programs/<date>_<slug>/` with `program.json` (canonical order
-cold-open→act-1→fwf-sponsor→act-2→thebuild-sponsor→act-3→cta) + an initial manifest.
+Creates `deep-dive/programs/<date>_<slug>/` with `program.json` (a **skeleton** order
+cold-open→act-1→fwf-sponsor→act-2→thebuild-sponsor→act-3→cta) + an initial manifest. The
+`act-1/2/3` entries are placeholders you **expand into sub-segments** in step 4b — don't author
+to them as-is.
 
 ### 2. Research (library-first)
 Query the brain first (personas, the 4 named frameworks, the source roster), THEN the web for
@@ -80,6 +82,37 @@ films). Then:
 deepdive approve-plan <program_dir> --notes "<what you checked>"
 ```
 **Recording/assembly is gated on this** — the manifest refuses to assemble an unapproved plan.
+
+### 4b. Expand the order into your sub-segments (the segment model — read this)
+**`order` is a FLAT, ordered list of build/record units.** Each entry is either one `explainer`
+project (a ~60–90s sub-segment, the cold-open, or the CTA) under `segments/<id>/`, **or** a
+registered interstitial. There is **no nested "act → sub-segments" structure in the manifest** —
+the assembler walks `order` top-to-bottom, conforms each entry's MP4, and concatenates them. The
+record/align/gate/review loop also operates **per `order` entry**. So:
+
+- **Acts are a grouping concept, not a manifest level.** Replace each `act-N` skeleton entry with
+  that act's actual sub-segments, each its own `order` entry + `segments` def. Edit `program.json`
+  directly (it's the intent file; `deepdive` reconciles the manifest from it):
+  ```json
+  "order": ["cold-open", "act1-sub01", "act1-sub02", "fwf-sponsor",
+            "act2-sub01", "act2-sub02", "act2-sub03", "thebuild-sponsor",
+            "act3-sub01", "act3-sub02", "cta"],
+  "segments": {
+    "cold-open":  { "kind": "act", "title": "Cold open",        "chapter": "Intro" },
+    "act1-sub01": { "kind": "act", "title": "<sub-seg hook>",   "chapter": "Act I — <act title>" },
+    "act1-sub02": { "kind": "act", "title": "<...>",            "chapter": "Act I — <act title>" },
+    "fwf-sponsor":{ "kind": "interstitial", "registry_ref": "interstitial-fwf-book", "title": "Founders Who Finish" },
+    "act2-sub01": { "kind": "act", "title": "<...>",            "chapter": "Act II — <act title>" }
+    /* … */
+  }
+  ```
+- **IDs are free-form** (use `act1-sub01`-style ids so order reads clearly). `kind` is `"act"`
+  for your projects, `"interstitial"` for sponsors/CTA (with a `registry_ref`).
+- **`chapter` groups sub-segments into ONE YouTube chapter.** Give every sub-segment of an act the
+  **same `chapter` string** → the assembler collapses them into a single act-level chapter (without
+  it, you'd get a chapter per 60–90s sub-segment). `title` stays per-segment (used as the chapter
+  label only when `chapter` is absent).
+- After editing `order`, run `deepdive doctor <dir>` — it reconciles the manifest to the new list.
 
 ### 5. Author + record each sub-segment
 For every act, for each ~60–90s sub-segment (on idea boundaries):

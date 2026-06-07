@@ -153,7 +153,10 @@ def run(program, *, dry_run=False, allow_unapproved=False):
     # caption stitch + chapters (ffprobe-exact offsets off the CONFORMED segments)
     cap = captions.stitch(conformed, [s["srt"] for s in sources],
                           program.master_dir / "captions.srt", program.master_dir / "captions.vtt")
-    chap = chapters.build(conformed, [s["title"] for s in sources], program.master_dir / "chapters.txt")
+    # chapter title per segment = its `chapter` (groups sub-segments into one act-level chapter)
+    # else its `title`; chapters.build then collapses consecutive identical titles.
+    chap_titles = [program.segment(s["id"]).get("chapter") or s["title"] for s in sources]
+    chap = chapters.build(conformed, chap_titles, program.master_dir / "chapters.txt")
     validation = validate_master(program, master, conformed, cap, chap)
 
     report = {"master": str(master), "segments": len(sources),
