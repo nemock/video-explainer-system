@@ -45,14 +45,17 @@ def cmd_scaffold(args):
             "language": "en", "theme": args.theme, "safe_bottom": safe_bottom}
     if min_length:
         proj["min_length"] = min_length
+    if args.no_cta:
+        proj["auto_cta"] = False  # branded but no CTA tail (deep-dive act sub-segments)
     brand_note = None
     if args.brand:
         bdir, bdata = brand.resolve(args.brand)
         if bdir:
             proj["brand"] = brand.copy_into(out, bdir, bdata, args.brand, cta_variant=args.cta)
             cv = proj["brand"].get("cta_variant")
-            brand_note = (f"brand '{args.brand}' ({proj['brand']['name']}) — watermark + CTA auto-added"
-                          + (f" [cta: {cv}]" if cv else ""))
+            cta_part = "watermark only (no CTA, --no-cta)" if args.no_cta else "watermark + CTA auto-added"
+            brand_note = (f"brand '{args.brand}' ({proj['brand']['name']}) — {cta_part}"
+                          + (f" [cta: {cv}]" if (cv and not args.no_cta) else ""))
         else:
             brand_note = f"brand '{args.brand}' NOT FOUND in ./brand/ or ~/.claude/explainer-brands/ — skipped"
     (out / "project.json").write_text(json.dumps(proj, indent=2))
@@ -167,6 +170,9 @@ def main(argv=None):
                    help="brand slug (e.g. ACME); adds watermark + auto CTA end slide from the brand library")
     s.add_argument("--cta", default=None,
                    help="CTA variant name from the brand's cta_library.json (else the library default / brand.json cta)")
+    s.add_argument("--no-cta", action="store_true", dest="no_cta",
+                   help="keep the brand watermark but DON'T auto-append a CTA slide/narration "
+                        "(for deep-dive act sub-segments — the CTA is the film's closing segment)")
     s.set_defaults(func=cmd_scaffold)
 
     m = sub.add_parser("media", help="run the pure-Python media pipeline on a project dir")
