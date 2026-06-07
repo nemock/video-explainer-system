@@ -3,7 +3,7 @@ browser teleprompter that records the mic per segment (MediaRecorder), saves eac
 straight into the project's voiceover/ folder, and supports re-recording — no external app.
 
 Run it in the background; it returns when the operator clicks "Finish" in the browser."""
-import json, subprocess, threading, time, webbrowser
+import json, os, subprocess, threading, time, webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
@@ -65,7 +65,16 @@ def run(proj, open_browser=True):
             else:
                 self._send(404, b"{}")
 
-    srv = HTTPServer(("127.0.0.1", 0), H)
+    # FIXED port so the origin (host:port) is stable across segments — Chrome scopes the mic
+    # permission to the exact origin, so a random port re-prompts every tab. Override with
+    # EXPLAINER_RECORDER_PORT, but keep it fixed so the grant persists.
+    port = int(os.environ.get("EXPLAINER_RECORDER_PORT", "8765"))
+    try:
+        srv = HTTPServer(("127.0.0.1", port), H)   # HTTPServer sets SO_REUSEADDR -> frees fast
+    except OSError as e:
+        raise RuntimeError(f"recorder port {port} is unavailable ({e}). A previous recorder may "
+                           f"still be open — close that tab/process, or set EXPLAINER_RECORDER_PORT "
+                           f"to another FIXED free port (keep it fixed so the mic grant persists).") from e
     url = f"http://127.0.0.1:{srv.server_address[1]}/"
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     print(f"RECORDER READY → {url}\nRecord each segment in the browser, then click 'Finish & render'.", flush=True)
@@ -80,6 +89,7 @@ def run(proj, open_browser=True):
     except KeyboardInterrupt:
         pass
     srv.shutdown()
+    srv.server_close()   # release the fixed port promptly so the next segment can rebind it
     rec = [s["id"] for s in seg_list if recorded(s["id"])]
     miss = [s["id"] for s in seg_list if not recorded(s["id"])]
     result = {"recorded": rec, "missing": miss, "segments": len(seg_list)}
