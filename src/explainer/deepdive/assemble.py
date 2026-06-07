@@ -9,7 +9,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from . import audio, buildlog, captions, chapters, conform, interstitials, manifest as mf, rubric
+from . import actbed, audio, buildlog, captions, chapters, conform, interstitials, manifest as mf, rubric
 
 
 def _sources(program, manifest):
@@ -122,12 +122,21 @@ def run(program, *, dry_run=False, allow_unapproved=False):
     if cdir.exists():
         shutil.rmtree(cdir)
     cdir.mkdir(parents=True)
+    bed = actbed.resolve(program)  # optional act-bed underscore (program.json music.act_bed)
+    bed_dir = program.scratch_dir / "actbed"
     conformed, actions = [], []
     for i, s in enumerate(sources):
+        src = s["src"]
+        # act segments get the optional music bed ducked under the VO; interstitials keep their
+        # own sponsor bed; loudnorm (in conform) then level-matches every seam.
+        if bed and s["kind"] == "act":
+            bedded = bed_dir / f"{i:02d}_{s['id']}_bed.mp4"
+            with buildlog.timed(program, "act-bed", s["id"]):
+                actbed.mix_under(bed, src, bedded)
+            src = bedded
         dst = cdir / f"{i:02d}_{s['id']}.mp4"
-        # loudnorm every segment (incl. interstitials) so the master's seams are level-matched.
         with buildlog.timed(program, "conform", s["id"]):
-            actions.append(conform.conform_segment(s["src"], dst, fps=program.fps, loudnorm=True))
+            actions.append(conform.conform_segment(src, dst, fps=program.fps, loudnorm=True))
         conformed.append(dst)
 
     # concat demuxer + stream copy (RAM-safe; conformed are CONTRACT-identical so -c copy is valid)

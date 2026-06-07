@@ -9,7 +9,7 @@ from datetime import date
 from pathlib import Path
 
 from .program import Program, CANONICAL_ORDER
-from . import assemble, manifest as mf, doctor, orchestrator, gate as gate_mod, rubric
+from . import assemble, manifest as mf, doctor, orchestrator, gate as gate_mod, rubric, packaging
 
 
 def _slug(s):
@@ -86,6 +86,30 @@ def cmd_set_arc(args):
     rubric.set_arc(prog, m, hook_archetype=args.hook, three_act_rhythm=args.rhythm,
                    payoff_type=args.payoff)
     print(json.dumps({"arc": m["rubric"]["arc"], "variety": rubric.variety_check(prog)}, indent=2))
+
+
+def cmd_thumbnail(args):
+    prog = Program.load(args.program_dir)
+    accent = [a.strip() for a in args.accent.split(",")] if args.accent else None
+    out = args.out or (prog.dir / "packaging" / "thumbnail.png")
+    rep = packaging.thumbnail(prog, args.text, out, accent=accent, logo=args.logo, selfie=args.selfie)
+    print(json.dumps(rep, indent=2))
+
+
+def cmd_package(args):
+    prog = Program.load(args.program_dir)
+    out = {}
+    if args.titles:
+        out.update(packaging.write_title_variants(prog, [t.strip() for t in args.titles.split("||")]))
+    else:
+        out.update(packaging.write_title_variants(prog, packaging.TITLE_TEMPLATE))
+        out["note"] = "title-variants.md scaffolded with templates — author benefit-forward variants"
+    if args.text:
+        out.update(packaging.thumbnail(prog, args.text,
+                                       prog.dir / "packaging" / "thumbnail.png",
+                                       accent=[a.strip() for a in args.accent.split(",")] if args.accent else None,
+                                       selfie=args.selfie))
+    print(json.dumps(out, indent=2))
 
 
 def cmd_status(args):
@@ -173,6 +197,23 @@ def main(argv=None):
     sa.add_argument("--rhythm", required=True, help="three-act rhythm (e.g. problem-insight-playbook)")
     sa.add_argument("--payoff", required=True, help="payoff type (e.g. transformation, reveal, system)")
     sa.set_defaults(func=cmd_set_arc)
+
+    th = sub.add_parser("thumbnail", help="render the FWF 1280x720 thumbnail composite")
+    th.add_argument("program_dir")
+    th.add_argument("--text", required=True, help="3–5-word keyword line")
+    th.add_argument("--accent", default=None, help="comma list of words to render in indigo")
+    th.add_argument("--logo", default=None, help="logo PNG (default: the program brand's logo)")
+    th.add_argument("--selfie", default=None, help="optional operator selfie PNG (bottom-right)")
+    th.add_argument("--out", default=None)
+    th.set_defaults(func=cmd_thumbnail)
+
+    pk = sub.add_parser("package", help="title-variants.md (+ thumbnail with --text)")
+    pk.add_argument("program_dir")
+    pk.add_argument("--titles", default=None, help="'||'-separated benefit-forward title variants")
+    pk.add_argument("--text", default=None, help="thumbnail keyword line (renders the thumbnail too)")
+    pk.add_argument("--accent", default=None)
+    pk.add_argument("--selfie", default=None)
+    pk.set_defaults(func=cmd_package)
 
     s = sub.add_parser("status", help="concise manifest-vs-disk status of a program")
     s.add_argument("program_dir")
