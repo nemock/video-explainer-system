@@ -116,12 +116,19 @@ record/align/gate/review loop also operates **per `order` entry**. So:
 
 ### 5. Author + record each sub-segment
 For every act, for each ~60–90s sub-segment (on idea boundaries):
-1. **Scaffold** it as an `explainer` project inside the program:
+1. **Scaffold** it as an `explainer` project inside the program. **Act sub-segments use `--no-cta`**
+   — it keeps the FWF watermark but suppresses the auto-appended book-CTA slide + spoken CTA tail
+   (the `--brand` default adds one to *every* scaffolded project, which is right for short-form
+   Reels but would put a book CTA at the end of every 60–90s beat). The film's single call-to-action
+   is the dedicated **closing CTA segment**, not each act beat.
    ```
-   explainer scaffold "<seg-id>" --theme fwf --aspect 16:9 --brand FFW \
+   explainer scaffold "<seg-id>" --theme fwf --aspect 16:9 --brand FFW --no-cta \
        --voice-source operator --outdir <program_dir>/segments
    ```
    then rename `segments/<date>_<seg-id>/` → `segments/<seg-id>/` so it matches the manifest id.
+   *(The closing `cta` order entry is the ONE place you want the CTA: scaffold it `--brand FFW`
+   WITHOUT `--no-cta` so it carries the book/CTA close — or make it a registered CTA interstitial.
+   Sponsor interstitials are pre-rendered and already carry their own CTAs.)*
 2. **Author** `script.json` + `deck.json` (the `/explainer` device catalog — favor McKinsey
    treatments: action `title` + `source` line on data-viz, `kind:"muted"` to pre-highlight the
    one insight in indigo, narration-paced `build`). Ground the words in the operator's voice via

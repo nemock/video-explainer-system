@@ -8,7 +8,9 @@ def effective_segments(proj, script):
     segments = list(script["segments"])
     brand = proj.brand or {}
     spoken_cta = (brand.get("cta") or {}).get("spoken")
-    if spoken_cta and not any(s.get("slide") == "cta" for s in segments):
+    # `auto_cta` (default true) gates the spoken CTA, mirroring the deck CTA slide in deckbuild —
+    # set false (scaffold --no-cta) so a branded act sub-segment isn't narrated with a CTA tail.
+    if spoken_cta and proj.data.get("auto_cta", True) and not any(s.get("slide") == "cta" for s in segments):
         next_id = (max(s["id"] for s in segments) + 1) if segments else 0
         segments.append({"id": next_id, "slide": "cta", "text": spoken_cta})
     return segments

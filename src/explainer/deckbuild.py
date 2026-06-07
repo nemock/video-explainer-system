@@ -81,6 +81,9 @@ def run(proj):
 
     # branding: watermark on every slide + an auto-appended CTA end slide (assets are
     # project-relative, e.g. "brand/logo.png"; the deck lives one level down in deck/).
+    # `auto_cta` (default true) gates the CTA append: set false for a branded segment that should
+    # carry the watermark but NOT a CTA tail — e.g. a deep-dive ACT sub-segment, where the CTA is
+    # the film's dedicated closing segment, not the end of every 60–90s beat (scaffold --no-cta).
     brand = proj.brand or {}
     if brand:
         if brand.get("logo"):
@@ -92,7 +95,7 @@ def run(proj):
         if brand.get("product"):
             bc["product"] = "../" + brand["product"]
         deck["brand"] = bc
-        if not any(s.get("id") == "cta" for s in deck.get("slides", [])):
+        if proj.data.get("auto_cta", True) and not any(s.get("id") == "cta" for s in deck.get("slides", [])):
             deck.setdefault("slides", []).append({"id": "cta", "type": "cta"})
     w, h = proj.size
     base = (ASSETS / "deck_base.html").read_text()
