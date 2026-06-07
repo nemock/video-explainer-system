@@ -10,11 +10,11 @@ functions the Phase-2 assembler imports (no whole-film filtergraph; per-segment,
   3. measure_loudness()   — integrated LUFS / true-peak / LRA for any clip (ffmpeg loudnorm json).
   4. seam_lufs_check()    — assert consecutive segments are level-matched (|dLUFS| <= 1.0).
 
-CLI:  python3 audio_recipes.py duck   --vo vo.wav --bed bed.mp3 --out mix.wav [--duck-db 22]
-      python3 audio_recipes.py norm   --in mix.wav --out final.wav [--i -14 --tp -1]
-      python3 audio_recipes.py measure --in clip.wav
-      python3 audio_recipes.py seam   seg1.wav seg2.wav seg3.wav [--max-delta 1.0]
-      python3 audio_recipes.py demo   --vo vo.wav --bed bed.mp3 --outdir /tmp/auddemo
+CLI:  python -m explainer.deepdive.audio duck   --vo vo.wav --bed bed.mp3 --out mix.wav [--duck-db 22]
+      python -m explainer.deepdive.audio norm   --in mix.wav --out final.wav [--i -14 --tp -1]
+      python -m explainer.deepdive.audio measure --in clip.wav
+      python -m explainer.deepdive.audio seam   seg1.wav seg2.wav seg3.wav [--max-delta 1.0]
+      python -m explainer.deepdive.audio demo   --vo vo.wav --bed bed.mp3 --outdir /tmp/auddemo
 """
 import argparse, json, subprocess, sys
 from pathlib import Path

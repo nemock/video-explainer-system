@@ -21,6 +21,7 @@ dependencies = [
 
 [project.scripts]
 explainer = "explainer.cli:main"
+deepdive = "explainer.deepdive.cli:main"
 
 [build-system]
 requires = ["hatchling"]
