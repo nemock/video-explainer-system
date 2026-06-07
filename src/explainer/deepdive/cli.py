@@ -9,7 +9,7 @@ from datetime import date
 from pathlib import Path
 
 from .program import Program, CANONICAL_ORDER
-from . import assemble, manifest as mf, doctor, orchestrator, gate as gate_mod
+from . import assemble, manifest as mf, doctor, orchestrator, gate as gate_mod, rubric
 
 
 def _slug(s):
@@ -44,11 +44,48 @@ def cmd_assemble(args):
         rep = assemble.preflight(prog, check_only=True)
         print(json.dumps(rep, indent=2))
         return 0 if rep["ok"] else 2
-    rep = assemble.run(prog, dry_run=args.dry_run)
+    try:
+        rep = assemble.run(prog, dry_run=args.dry_run, allow_unapproved=args.allow_unapproved)
+    except RuntimeError as e:
+        print(json.dumps({"error": str(e)}, indent=2))
+        return 2
     print(json.dumps(rep, indent=2))
     if rep.get("dry_run"):
         return 0
     return 0 if rep["validation"]["ok"] else 2
+
+
+def cmd_plan(args):
+    prog = Program.load(args.program_dir)
+    p = prog.dir / "content-plan.md"
+    if p.exists() and not args.force:
+        print(json.dumps({"content_plan": str(p), "note": "exists — pass --force to overwrite"}))
+        return 0
+    p.write_text(rubric.content_plan_template(prog))
+    print(json.dumps({"content_plan": str(p), "next": "author the spine, then `deepdive rubric <dir> plan`"}, indent=2))
+
+
+def cmd_rubric(args):
+    print(json.dumps({"kind": args.kind, "checklist": rubric.checklist(args.kind)}, indent=2))
+
+
+def cmd_approve_plan(args):
+    prog = Program.load(args.program_dir); m = mf.load(prog)
+    rubric.record(prog, m, "plan", rubric.checklist("plan"), approved=True, notes=args.notes or "")
+    print(json.dumps({"plan_approved": True, "variety": rubric.variety_check(prog)}, indent=2))
+
+
+def cmd_approve_film(args):
+    prog = Program.load(args.program_dir); m = mf.load(prog)
+    rubric.record(prog, m, "film", rubric.checklist("film"), approved=True, notes=args.notes or "")
+    print(json.dumps({"film_approved": True}, indent=2))
+
+
+def cmd_set_arc(args):
+    prog = Program.load(args.program_dir); m = mf.load(prog)
+    rubric.set_arc(prog, m, hook_archetype=args.hook, three_act_rhythm=args.rhythm,
+                   payoff_type=args.payoff)
+    print(json.dumps({"arc": m["rubric"]["arc"], "variety": rubric.variety_check(prog)}, indent=2))
 
 
 def cmd_status(args):
@@ -106,7 +143,36 @@ def main(argv=None):
     a.add_argument("program_dir")
     a.add_argument("--check", action="store_true", help="preflight conformance table only")
     a.add_argument("--dry-run", action="store_true", help="ordered plan + chapter preview, no encode")
+    a.add_argument("--allow-unapproved", action="store_true",
+                   help="bypass the plan/segment approval gate (automated spine/demo runs)")
     a.set_defaults(func=cmd_assemble)
+
+    pl = sub.add_parser("plan", help="scaffold content-plan.md (throughline spine + open-loop ledger)")
+    pl.add_argument("program_dir")
+    pl.add_argument("--force", action="store_true")
+    pl.set_defaults(func=cmd_plan)
+
+    ru = sub.add_parser("rubric", help="emit a rubric checklist (plan|film) for self-critique")
+    ru.add_argument("program_dir")
+    ru.add_argument("kind", choices=["plan", "film"])
+    ru.set_defaults(func=cmd_rubric)
+
+    ap = sub.add_parser("approve-plan", help="record plan-rubric approval (gates recording/assembly)")
+    ap.add_argument("program_dir")
+    ap.add_argument("--notes", default=None)
+    ap.set_defaults(func=cmd_approve_plan)
+
+    af = sub.add_parser("approve-film", help="record whole-film rubric approval (gates publish)")
+    af.add_argument("program_dir")
+    af.add_argument("--notes", default=None)
+    af.set_defaults(func=cmd_approve_film)
+
+    sa = sub.add_parser("set-arc", help="record the film's archetype for the structural-variety guard")
+    sa.add_argument("program_dir")
+    sa.add_argument("--hook", required=True, help="hook archetype (e.g. surprising-stat, bold-claim)")
+    sa.add_argument("--rhythm", required=True, help="three-act rhythm (e.g. problem-insight-playbook)")
+    sa.add_argument("--payoff", required=True, help="payoff type (e.g. transformation, reveal, system)")
+    sa.set_defaults(func=cmd_set_arc)
 
     s = sub.add_parser("status", help="concise manifest-vs-disk status of a program")
     s.add_argument("program_dir")

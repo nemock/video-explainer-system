@@ -57,6 +57,10 @@ def new_manifest(program) -> dict:
             "program": {"slug": program.slug, "title": program.title, "fps": program.fps},
             "order": list(program.order),
             "segments": segs,
+            # editorial rubric gates (§8.5): plan-approval before recording, film-approval before
+            # publish. `arc` records this film's archetype for the structural-variety guard.
+            "rubric": {"plan_approved": False, "film_approved": False,
+                       "plan_checklist": None, "film_checklist": None, "arc": None},
             "assembly": {"status": "planned", "master": None, "validated": False, "report": None}}
 
 
