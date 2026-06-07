@@ -134,7 +134,7 @@ def cmd_build_segment(args):
 
 def cmd_record(args):
     rep = orchestrator.record_segment(Program.load(args.program_dir), args.seg_id,
-                                      open_browser=not args.no_open)
+                                      open_browser=not args.no_open, render=not args.gate_only)
     print(json.dumps(rep, indent=2))
     return 2 if rep.get("stopped") else 0
 
@@ -229,10 +229,12 @@ def main(argv=None):
     bs.add_argument("--no-gate", action="store_true", help="skip the alignment-confidence gate")
     bs.set_defaults(func=cmd_build_segment)
 
-    rc = sub.add_parser("record", help="operator path: teleprompter (w/ hand-off context) -> build")
+    rc = sub.add_parser("record", help="operator path: teleprompter (w/ hand-off context) -> gate (+ build)")
     rc.add_argument("program_dir")
     rc.add_argument("seg_id")
     rc.add_argument("--no-open", action="store_true", help="don't auto-open the recorder browser")
+    rc.add_argument("--gate-only", action="store_true", dest="gate_only",
+                    help="record + align + GATE only; skip render (fast record sprint — render later)")
     rc.set_defaults(func=cmd_record)
 
     g = sub.add_parser("gate", help="run the alignment-confidence gate on a built segment")

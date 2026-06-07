@@ -34,10 +34,14 @@ def handoff_context(program, seg_id):
     return None
 
 
-def build_segment(program, seg_id, *, run_gate=True):
+def build_segment(program, seg_id, *, run_gate=True, render=True):
     """Run a segment's media pipeline with lifecycle + gate. Returns a report. If an OPERATOR take
     fails the alignment gate, render is blocked and the segment stays `recorded` for a re-record or
-    a manual transcript correction (edit script.json + rebuild)."""
+    a manual transcript correction (edit script.json + rebuild).
+
+    `render=False` stops after the gate (narrate -> align -> GATE) — the fast path for the record
+    sprint, so the operator powers through takes and the slow frame-capture render happens in a
+    later batch (`build_segment` again with render=True, or `deepdive build-segment`)."""
     if program.is_interstitial(seg_id):
         raise ValueError(f"'{seg_id}' is an interstitial — assembled from the registry, not built")
     manifest = mf.load(program)
@@ -60,6 +64,9 @@ def build_segment(program, seg_id, *, run_gate=True):
             segstatus.report(proj.dir, "gate", False, g)
             return {"seg": seg_id, "stopped": "alignment-gate", "status": "recorded", "gate": g}
 
+        if not render:  # record-sprint fast path: gated but not yet rendered
+            return {"seg": seg_id, "status": "recorded", "gate": g, "rendered": False}
+
         with buildlog.timed(program, "deck", seg_id):
             deckbuild.run(proj)
         with buildlog.timed(program, "render", seg_id):
@@ -74,9 +81,11 @@ def build_segment(program, seg_id, *, run_gate=True):
         mf.release(program, manifest, seg_id)
 
 
-def record_segment(program, seg_id, *, open_browser=True):
+def record_segment(program, seg_id, *, open_browser=True, render=True):
     """Operator path: surface the hand-off context, launch the teleprompter recorder, then build.
-    Requires an operator at the machine — the recorder blocks until takes are captured."""
+    Requires an operator at the machine — the recorder blocks until takes are captured. With
+    `render=False` (the record sprint) it stops after the alignment gate so the next segment can be
+    recorded immediately; render the batch afterward."""
     from .. import recorder
     proj = program.as_project(seg_id)
     ctx = handoff_context(program, seg_id)
@@ -84,7 +93,7 @@ def record_segment(program, seg_id, *, open_browser=True):
         print(f"[hand-off] continue the tone from '{ctx['prior_id']}', which closed on:\n"
               f"    “{ctx['closing_line']}”\n")
     recorder.run(proj, open_browser=open_browser)   # captures voiceover/seg_*.wav
-    return build_segment(program, seg_id)
+    return build_segment(program, seg_id, render=render)
 
 
 def review(program, seg_id, decision, *, notes=None):

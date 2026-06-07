@@ -114,44 +114,64 @@ record/align/gate/review loop also operates **per `order` entry**. So:
   label only when `chapter` is absent).
 - After editing `order`, run `deepdive doctor <dir>` — it reconciles the manifest to the new list.
 
-### 5. Author + record each sub-segment
-For every act, for each ~60–90s sub-segment (on idea boundaries):
-1. **Scaffold** it as an `explainer` project inside the program. **Act sub-segments use `--no-cta`**
-   — it keeps the FWF watermark but suppresses the auto-appended book-CTA slide + spoken CTA tail
-   (the `--brand` default adds one to *every* scaffolded project, which is right for short-form
-   Reels but would put a book CTA at the end of every 60–90s beat). The film's single call-to-action
-   is the dedicated **closing CTA segment**, not each act beat.
+### 5a. Author every sub-segment (scaffold + script/deck) — do this for ALL of them first
+For each act/cta sub-segment in `order` (skip interstitials):
+1. **Scaffold** it as an `explainer` project. **Act sub-segments use `--no-cta`** — it keeps the
+   FWF watermark but suppresses the auto-appended book-CTA slide + spoken CTA tail (the `--brand`
+   default adds one to *every* project, which is right for short-form Reels but would put a book CTA
+   at the end of every 60–90s beat). The film's single CTA is the dedicated **closing `cta` segment**.
    ```
    explainer scaffold "<seg-id>" --theme fwf --aspect 16:9 --brand FFW --no-cta \
        --voice-source operator --outdir <program_dir>/segments
    ```
-   then rename `segments/<date>_<seg-id>/` → `segments/<seg-id>/` so it matches the manifest id.
-   *(The closing `cta` order entry is the ONE place you want the CTA: scaffold it `--brand FFW`
-   WITHOUT `--no-cta` so it carries the book/CTA close — or make it a registered CTA interstitial.
-   Sponsor interstitials are pre-rendered and already carry their own CTAs.)*
+   then rename `segments/<date>_<seg-id>/` → `segments/<seg-id>/` to match the manifest id.
+   *(The closing `cta` segment is the ONE place to keep the CTA: scaffold it `--brand FFW` WITHOUT
+   `--no-cta`. Sponsor interstitials are pre-rendered and carry their own CTAs.)*
 2. **Author** `script.json` + `deck.json` (the `/explainer` device catalog — favor McKinsey
-   treatments: action `title` + `source` line on data-viz, `kind:"muted"` to pre-highlight the
-   one insight in indigo, narration-paced `build`). Ground the words in the operator's voice via
-   `explainer talktime --brand FFW --topics "<keywords>"` — quote verbatim, adapt positions/
-   anecdotes, **never fabricate**.
-3. **Record** (operator voice — the teleprompter surfaces the prior segment's hand-off line for
-   tonal continuity):
-   ```
-   deepdive record <program_dir> <seg-id>
-   ```
-   This launches the teleprompter, then runs narrate → align → the **alignment-confidence gate**.
-   - If the gate **fails** (ad-lib, dropped phrase, long silence) it prints the exact timestamps
-     and refuses to render. Either **re-record**, or if the change was intentional, **edit the
-     segment's `script.json`** to match what was said and re-run (`deepdive build-segment`).
-4. **Review** the rendered sub-segment and record the verdict (assembly gates on `approved`):
-   ```
-   deepdive review <program_dir> <seg-id> approve|reject --notes "<why>"
-   ```
-Record out of order, resume across sessions — `deepdive doctor` always shows what's left.
+   treatments: action `title` + `source` line on data-viz, `kind:"muted"` insight highlight,
+   narration-paced `build`). Ground the words in the operator's voice via
+   `explainer talktime --brand FFW --topics "<keywords>"` — quote verbatim, adapt, **never fabricate**.
+3. Offer the operator a quick **script review** before any recording (re-recording is the costly step).
 
-*(For a fully-TTS draft/preview, scaffold without `--voice-source operator` and use
-`deepdive build-segment <program> <seg>` directly — the gate passes trivially on TTS since the
-narration is the script.)*
+### 5b. Record sprint — YOU DRIVE THIS LOOP. Do NOT hand the operator a command list.
+This is an interactive, **coached** loop: **you run every command; the operator only reads the
+teleprompter and clicks Finish.** Walk them through the segments one at a time — never dump the
+segment list + commands for them to run themselves. For each act/cta sub-segment, in `order`
+(skip interstitials):
+
+1. Launch the recorder in the **background** (so you stay responsive and aren't killed by a tool
+   timeout while they read):
+   ```
+   deepdive record "<program_dir>" "<seg-id>" --gate-only
+   ```
+   `--gate-only` records → aligns → runs the **alignment gate** but **skips rendering**, so there's
+   **no render wait between takes** — the operator powers straight through. It opens the teleprompter
+   in their browser, pre-loaded with the prior segment's hand-off line for tonal continuity.
+2. Say one short line: *"Recording **<title>** — read the teleprompter, hit **Finish** when done."*
+   Then **wait** for the background command to complete (you'll be notified).
+3. Read the **gate** result:
+   - **Passed** → *"✓ clean take"* and **immediately launch the next segment** (auto-advance).
+   - **Failed** → tell them exactly what it caught (the timestamps: an ad-lib, dropped phrase, or
+     long pause) and **re-launch the recorder for the same segment**. If they changed the wording on
+     purpose, edit that segment's `script.json` to match and re-run.
+4. Repeat until every act/cta segment is recorded + gated. Resume anytime — `deepdive doctor` shows
+   what's left.
+
+### 5c. Render the recorded segments (batch, unattended)
+After the sprint, render each recorded segment — the slow frame-capture step, no operator needed.
+Run them **one at a time** (RAM-safe), in the background:
+```
+deepdive build-segment "<program_dir>" "<seg-id>"   # narrate(assemble clips) -> align -> gate -> render -> mux
+```
+
+### 5d. Review (approve/reject) — assembly gates on `approved`
+Spot-check each rendered segment (a frame or a quick playback), then record the verdict:
+```
+deepdive review "<program_dir>" "<seg-id>" approve|reject --notes "<why>"
+```
+
+*(Fully-TTS draft/preview: scaffold WITHOUT `--voice-source operator`, skip 5b entirely, and run
+`deepdive build-segment` per segment — the gate passes trivially since the narration is the script.)*
 
 ### 6. Sponsor + CTA interstitials
 The FWF book / The Build / CTA interstitials are **pre-rendered, registered** MP4s
