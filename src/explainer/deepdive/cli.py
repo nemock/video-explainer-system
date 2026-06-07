@@ -9,7 +9,7 @@ from datetime import date
 from pathlib import Path
 
 from .program import Program, CANONICAL_ORDER
-from . import assemble, manifest as mf, doctor
+from . import assemble, manifest as mf, doctor, orchestrator, gate as gate_mod
 
 
 def _slug(s):
@@ -64,6 +64,33 @@ def cmd_doctor(args):
     return 0 if rep["drift"]["ok"] else 1
 
 
+def cmd_build_segment(args):
+    rep = orchestrator.build_segment(Program.load(args.program_dir), args.seg_id,
+                                     run_gate=not args.no_gate)
+    print(json.dumps(rep, indent=2))
+    return 2 if rep.get("stopped") else 0
+
+
+def cmd_record(args):
+    rep = orchestrator.record_segment(Program.load(args.program_dir), args.seg_id,
+                                      open_browser=not args.no_open)
+    print(json.dumps(rep, indent=2))
+    return 2 if rep.get("stopped") else 0
+
+
+def cmd_gate(args):
+    prog = Program.load(args.program_dir)
+    rep = gate_mod.evaluate(prog.as_project(args.seg_id), prog.data.get("gate"))
+    print(json.dumps(rep, indent=2))
+    return 0 if rep["passed"] else 2
+
+
+def cmd_review(args):
+    rep = orchestrator.review(Program.load(args.program_dir), args.seg_id, args.decision,
+                              notes=args.notes)
+    print(json.dumps(rep, indent=2))
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(prog="deepdive", description="Deep-dive long-form orchestrator/assembler.")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -88,6 +115,30 @@ def main(argv=None):
     dr = sub.add_parser("doctor", help="full health check: lifecycle checklist + drift + next actions")
     dr.add_argument("program_dir")
     dr.set_defaults(func=cmd_doctor)
+
+    bs = sub.add_parser("build-segment", help="run a segment: narrate -> align -> gate -> render -> mux")
+    bs.add_argument("program_dir")
+    bs.add_argument("seg_id")
+    bs.add_argument("--no-gate", action="store_true", help="skip the alignment-confidence gate")
+    bs.set_defaults(func=cmd_build_segment)
+
+    rc = sub.add_parser("record", help="operator path: teleprompter (w/ hand-off context) -> build")
+    rc.add_argument("program_dir")
+    rc.add_argument("seg_id")
+    rc.add_argument("--no-open", action="store_true", help="don't auto-open the recorder browser")
+    rc.set_defaults(func=cmd_record)
+
+    g = sub.add_parser("gate", help="run the alignment-confidence gate on a built segment")
+    g.add_argument("program_dir")
+    g.add_argument("seg_id")
+    g.set_defaults(func=cmd_gate)
+
+    rv = sub.add_parser("review", help="approve/reject a rendered segment (assembly gates on approved)")
+    rv.add_argument("program_dir")
+    rv.add_argument("seg_id")
+    rv.add_argument("decision", choices=["approve", "reject"])
+    rv.add_argument("--notes", default=None)
+    rv.set_defaults(func=cmd_review)
 
     args = p.parse_args(argv)
     return args.func(args) or 0
