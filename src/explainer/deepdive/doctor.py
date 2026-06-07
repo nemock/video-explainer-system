@@ -25,10 +25,15 @@ def _next_actions(manifest):
             actions.append(f"{sid}: investigate failure, then retry")
     ranks = [mf.RANK.get(segs[s]["status"], 0) for s in manifest["order"]]
     asm = manifest["assembly"]["status"]
+    rub = manifest.get("rubric") or {}
     if all(r >= _RENDERED for r in ranks) and asm in ("planned", "failed"):
+        if not rub.get("plan_approved"):
+            actions.append("PROGRAM: approve the plan rubric -> `deepdive approve-plan`")
         actions.append("PROGRAM: all segments ready -> `deepdive assemble`")
-    if asm == "assembled":
-        actions.append("PROGRAM: watch the master end-to-end (whole-film review gate)")
+    if asm == "assembled" and not rub.get("film_approved"):
+        actions.append("PROGRAM: watch the master, then `deepdive approve-film`")
+    if asm == "assembled" and rub.get("film_approved"):
+        actions.append("PROGRAM: publishable — hand off to Phase 3 (publish; not in this tool)")
     return actions
 
 

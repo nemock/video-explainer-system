@@ -9,7 +9,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from . import audio, buildlog, captions, chapters, conform, interstitials, manifest as mf
+from . import audio, buildlog, captions, chapters, conform, interstitials, manifest as mf, rubric
 
 
 def _sources(program, manifest):
@@ -90,11 +90,17 @@ def validate_master(program, master, conformed, cap_report, chapter_list):
     return {"ok": all(c["ok"] for c in checks.values()), "checks": checks}
 
 
-def run(program, *, dry_run=False):
+def run(program, *, dry_run=False, allow_unapproved=False):
     """Assemble the master. dry_run → print the ordered plan + chapter/caption preview + total,
-    no encode. Returns the assembly report (also written into the manifest)."""
+    no encode. By design assembly GATES on approval (plan rubric + every act segment approved);
+    pass allow_unapproved to bypass (the automated spine/demo does). Returns the assembly report."""
     manifest = mf.load(program)
     mf.reconcile(program, manifest)
+    if not dry_run and not allow_unapproved:
+        ok, reasons = rubric.assembly_ready(manifest)
+        if not ok:
+            raise RuntimeError("assembly gate (not approved): " + "; ".join(reasons)
+                               + "  [override with --allow-unapproved]")
     sources = _sources(program, manifest)
 
     if dry_run:
