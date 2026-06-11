@@ -286,6 +286,12 @@ body[data-theme="fwf"] { font-stretch: 84%; }
 [data-theme="fwf"] .cmpval, [data-theme="fwf"] .delta-val, [data-theme="fwf"] .ring-pct,
 [data-theme="fwf"] .trend-end, [data-theme="fwf"] .slidetitle { font-stretch: 74%; letter-spacing: -.01em; }
 
+/* balance multi-line display text so line lengths even out (avoids a near-full first line
+   followed by a 2-word orphan; easier to read, no long eye-scan). Chrome 114+ (render + stills
+   both use modern headless Chrome); degrades to normal wrapping if unsupported. */
+[data-theme="fwf"] .headline, [data-theme="fwf"] .slidetitle, [data-theme="fwf"] .quotetext,
+[data-theme="fwf"] .reframe, [data-theme="fwf"] .buildline { text-wrap: balance; }
+
 /* texture layers sit above the flat #36185B bg, below #stage content (z-index 1).
    vignette = a cheap radial gradient (darker toward edges); grain = a tileable, fixed-seed
    feTurbulence noise (deterministic, no per-frame re-raster). */
