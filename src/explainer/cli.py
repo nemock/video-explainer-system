@@ -102,6 +102,20 @@ def cmd_stage(args):
     print(json.dumps(fn(proj), indent=2))
 
 
+def cmd_render(args):
+    """Launch render→mux→manifest→qa DETACHED (survives session suspension)
+    and serialized via the machine-global render lock."""
+    Project.load(args.project_dir)  # validate the project exists before detaching
+    res = renderlock.launch_detached(args.project_dir, only=args.only, log=print)
+    print(json.dumps(res, indent=2))
+    return 0
+
+
+def cmd_render_status(args):
+    print(renderlock.status())
+    return 0
+
+
 def cmd_ingest(args):
     proj = Project.load(args.project_dir)
     if args.pdf:
@@ -190,7 +204,19 @@ def main(argv=None):
     m.add_argument("--only", default=None, help="comma list: narrate,align,deck,render,mux,manifest")
     m.set_defaults(func=cmd_media)
 
+    rn = sub.add_parser("render", help="launch render→mux→manifest→qa DETACHED (survives session "
+                                       "suspension) + serialized via the machine-global render lock")
+    rn.add_argument("project_dir")
+    rn.add_argument("--only", default=None,
+                    help=f"stage list to run detached (default: {renderlock.DEFAULT_STAGES})")
+    rn.set_defaults(func=cmd_render)
+
+    rs = sub.add_parser("render-status", help="show the render-lock holder + every live render on this Mac")
+    rs.set_defaults(func=cmd_render_status)
+
     for st in STAGE_MAP:
+        if st == "render":
+            continue  # 'render' is the detached launcher above; inline stage = `media --only render`
         sp = sub.add_parser(st, help=f"run only the {st} stage")
         sp.add_argument("project_dir")
         sp.set_defaults(func=cmd_stage, stage=st)
