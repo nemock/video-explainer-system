@@ -6,7 +6,7 @@ from datetime import date
 from pathlib import Path
 
 from .project import Project, ASPECTS
-from . import deckbuild, manifest, wiki, ingest, themes, qa, presets, validate, handoff, brand, talktime, stills
+from . import deckbuild, manifest, wiki, ingest, themes, qa, presets, validate, handoff, brand, talktime, stills, renderlock
 from .media import synth, align, render, mux
 
 STAGES = [("narrate", synth.run), ("align", align.run), ("deck", deckbuild.run),
@@ -67,18 +67,28 @@ def cmd_media(args):
     proj = Project.load(args.project_dir)
     only = set(args.only.split(",")) if args.only else None
     results, t0 = {}, time.time()
-    for name, fn in STAGES:
-        if only and name not in only:
-            continue
-        ts = time.time()
-        _log(proj, f"START {name}")
-        try:
-            results[name] = fn(proj)
-        except Exception as e:
-            _log(proj, f"FAIL  {name}: {type(e).__name__}: {e}")
-            print(json.dumps({"failed_stage": name, "error": str(e)}))
-            return 1
-        _log(proj, f"OK    {name} ({time.time()-ts:.1f}s) {json.dumps(results[name])}")
+    lock = None  # machine-global render lock, held across render→mux (renderlock.py)
+    try:
+        for name, fn in STAGES:
+            if only and name not in only:
+                continue
+            # Serialize the memory-heavy capture+encode across every project and
+            # background routine on this Mac (the #10-vs-CVG collision, 2026-06-21).
+            if name in ("render", "mux") and lock is None:
+                lock = renderlock.acquire(proj, log=lambda m: _log(proj, m))
+            ts = time.time()
+            _log(proj, f"START {name}")
+            try:
+                results[name] = fn(proj)
+            except Exception as e:
+                _log(proj, f"FAIL  {name}: {type(e).__name__}: {e}")
+                print(json.dumps({"failed_stage": name, "error": str(e)}))
+                return 1
+            _log(proj, f"OK    {name} ({time.time()-ts:.1f}s) {json.dumps(results[name])}")
+            if name == "mux" and lock is not None:
+                renderlock.release(lock); lock = None
+    finally:
+        renderlock.release(lock)
     results["wall_clock_s"] = round(time.time() - t0, 2)
     proj.write_json(proj.work / "results.json", results)
     print("\n=== RESULTS ===")
