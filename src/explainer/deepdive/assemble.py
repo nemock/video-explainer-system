@@ -131,8 +131,11 @@ def run(program, *, dry_run=False, allow_unapproved=False):
         # own sponsor bed; loudnorm (in conform) then level-matches every seam.
         if bed and s["kind"] == "act":
             bedded = bed_dir / f"{i:02d}_{s['id']}_bed.mp4"
+            _m = program.data.get("music") or {}
             with buildlog.timed(program, "act-bed", s["id"]):
-                actbed.mix_under(bed, src, bedded)
+                actbed.mix_under(bed, src, bedded,
+                                 bed_floor_db=_m.get("act_bed_floor_db", -22.0),
+                                 ratio=_m.get("act_bed_ratio", 14.0))
             src = bedded
         dst = cdir / f"{i:02d}_{s['id']}.mp4"
         with buildlog.timed(program, "conform", s["id"]):

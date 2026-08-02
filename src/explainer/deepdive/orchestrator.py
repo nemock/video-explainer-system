@@ -10,7 +10,7 @@ nothing here re-implements the engine.)"""
 import json
 
 from .. import deckbuild
-from ..media import synth, align, render, mux
+from ..media import synth, align, render as render_stage, mux  # alias: `render` kwarg shadows the module
 from . import buildlog, gate, manifest as mf, segstatus
 
 
@@ -70,7 +70,7 @@ def build_segment(program, seg_id, *, run_gate=True, render=True):
         with buildlog.timed(program, "deck", seg_id):
             deckbuild.run(proj)
         with buildlog.timed(program, "render", seg_id):
-            render.run(proj)
+            render_stage.run(proj)
         with buildlog.timed(program, "mux", seg_id):
             mux.run(proj)
         segstatus.report(proj.dir, "render", True)

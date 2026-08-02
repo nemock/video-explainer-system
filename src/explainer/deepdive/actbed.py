@@ -30,10 +30,12 @@ def resolve(program):
     return p if p.exists() else None
 
 
-def mix_under(bed, src_mp4, dst_mp4, *, bed_floor_db=-22.0):
+def mix_under(bed, src_mp4, dst_mp4, *, bed_floor_db=-22.0, ratio=14.0):
     """Duck `bed` under the narration of `src_mp4` and remux with the original video. The bed is
     looped to cover the segment; ducking + final loudnorm happen downstream in conform. Returns
-    a report. RAM-trivial (streaming)."""
+    a report. RAM-trivial (streaming). `bed_floor_db` = overall bed level (pre-attenuation);
+    `ratio` = sidechain duck strength under speech (lower = bed stays audible; ~14 nearly gates it,
+    ~3 keeps it present as a background bed)."""
     dur = conform.probe(src_mp4)["format"]["duration"]
     work = Path(dst_mp4).parent
     work.mkdir(parents=True, exist_ok=True)
@@ -41,11 +43,12 @@ def mix_under(bed, src_mp4, dst_mp4, *, bed_floor_db=-22.0):
     subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-stream_loop", "-1",
                     "-i", str(bed), "-t", f"{dur + 0.4:.2f}", str(bed_loop)], check=True)
     ducked = work / (Path(dst_mp4).stem + "_ducked.wav")
-    audio.duck_under_vo(src_mp4, bed_loop, ducked, bed_floor_db=bed_floor_db)
+    audio.duck_under_vo(src_mp4, bed_loop, ducked, bed_floor_db=bed_floor_db, ratio=ratio)
     r = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(src_mp4),
                         "-i", str(ducked), "-map", "0:v:0", "-map", "1:a:0", "-c:v", "copy",
                         "-c:a", "aac", "-ar", "48000", "-ac", "2", "-shortest", str(dst_mp4)],
                        capture_output=True, text=True)
     if r.returncode != 0:
         raise RuntimeError(f"act-bed remux failed for {src_mp4}:\n{r.stderr[-1200:]}")
-    return {"src": str(src_mp4), "dst": str(dst_mp4), "bed": str(bed), "bed_floor_db": bed_floor_db}
+    return {"src": str(src_mp4), "dst": str(dst_mp4), "bed": str(bed),
+            "bed_floor_db": bed_floor_db, "ratio": ratio}

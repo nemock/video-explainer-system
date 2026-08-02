@@ -6,7 +6,7 @@ from datetime import date
 from pathlib import Path
 
 from .project import Project, ASPECTS
-from . import deckbuild, manifest, wiki, ingest, themes, qa, presets, validate, handoff, brand, talktime, stills
+from . import deckbuild, manifest, wiki, ingest, themes, qa, presets, validate, handoff, brand, talktime, stills, renderlock
 from .media import synth, align, render, mux
 
 STAGES = [("narrate", synth.run), ("align", align.run), ("deck", deckbuild.run),
@@ -67,18 +67,28 @@ def cmd_media(args):
     proj = Project.load(args.project_dir)
     only = set(args.only.split(",")) if args.only else None
     results, t0 = {}, time.time()
-    for name, fn in STAGES:
-        if only and name not in only:
-            continue
-        ts = time.time()
-        _log(proj, f"START {name}")
-        try:
-            results[name] = fn(proj)
-        except Exception as e:
-            _log(proj, f"FAIL  {name}: {type(e).__name__}: {e}")
-            print(json.dumps({"failed_stage": name, "error": str(e)}))
-            return 1
-        _log(proj, f"OK    {name} ({time.time()-ts:.1f}s) {json.dumps(results[name])}")
+    lock = None  # machine-global render lock, held across render→mux (renderlock.py)
+    try:
+        for name, fn in STAGES:
+            if only and name not in only:
+                continue
+            # Serialize the memory-heavy capture+encode across every project and
+            # background routine on this Mac (the #10-vs-CVG collision, 2026-06-21).
+            if name in ("render", "mux") and lock is None:
+                lock = renderlock.acquire(proj, log=lambda m: _log(proj, m))
+            ts = time.time()
+            _log(proj, f"START {name}")
+            try:
+                results[name] = fn(proj)
+            except Exception as e:
+                _log(proj, f"FAIL  {name}: {type(e).__name__}: {e}")
+                print(json.dumps({"failed_stage": name, "error": str(e)}))
+                return 1
+            _log(proj, f"OK    {name} ({time.time()-ts:.1f}s) {json.dumps(results[name])}")
+            if name == "mux" and lock is not None:
+                renderlock.release(lock); lock = None
+    finally:
+        renderlock.release(lock)
     results["wall_clock_s"] = round(time.time() - t0, 2)
     proj.write_json(proj.work / "results.json", results)
     print("\n=== RESULTS ===")
@@ -90,6 +100,20 @@ def cmd_stage(args):
     proj = Project.load(args.project_dir)
     fn = STAGE_MAP[args.stage]
     print(json.dumps(fn(proj), indent=2))
+
+
+def cmd_render(args):
+    """Launch render→mux→manifest→qa DETACHED (survives session suspension)
+    and serialized via the machine-global render lock."""
+    Project.load(args.project_dir)  # validate the project exists before detaching
+    res = renderlock.launch_detached(args.project_dir, only=args.only, log=print)
+    print(json.dumps(res, indent=2))
+    return 0
+
+
+def cmd_render_status(args):
+    print(renderlock.status())
+    return 0
 
 
 def cmd_ingest(args):
@@ -180,7 +204,19 @@ def main(argv=None):
     m.add_argument("--only", default=None, help="comma list: narrate,align,deck,render,mux,manifest")
     m.set_defaults(func=cmd_media)
 
+    rn = sub.add_parser("render", help="launch render→mux→manifest→qa DETACHED (survives session "
+                                       "suspension) + serialized via the machine-global render lock")
+    rn.add_argument("project_dir")
+    rn.add_argument("--only", default=None,
+                    help=f"stage list to run detached (default: {renderlock.DEFAULT_STAGES})")
+    rn.set_defaults(func=cmd_render)
+
+    rs = sub.add_parser("render-status", help="show the render-lock holder + every live render on this Mac")
+    rs.set_defaults(func=cmd_render_status)
+
     for st in STAGE_MAP:
+        if st == "render":
+            continue  # 'render' is the detached launcher above; inline stage = `media --only render`
         sp = sub.add_parser(st, help=f"run only the {st} stage")
         sp.add_argument("project_dir")
         sp.set_defaults(func=cmd_stage, stage=st)
